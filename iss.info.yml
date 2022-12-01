@@ -1,0 +1,11 @@
+name: ISS
+type: module
+description: Allows site to invoicing with mexican laws service.
+core_version_requirement: ^9
+package: COATI ISS
+configure: iss.admin_settings_form
+
+dependencies:
+  - drupal:block
+
+version: 0.1

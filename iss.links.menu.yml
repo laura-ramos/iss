@@ -1,0 +1,5 @@
+iss.admin_settings_form:
+  title: 'Invoicing Simple Service'
+  route_name: iss.admin_settings_form
+  description: 'Configure the Invoicing Simple Service.'
+  parent: system.admin_config_services
