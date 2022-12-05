@@ -1,0 +1,16 @@
+iss.settings:
+  type: config_object
+  label: 'ISS settings'
+  mapping:
+    api_key:
+      type: string
+      label: 'Api Key'
+    api_endpoint:
+      type: string
+      label: 'Endpoint'
+    regimen_fiscal:
+      type: integer
+      label: 'Régimen Fiscal'
+    lugar_expedicion:
+      type: integer
+      label: 'Lugar de expedición'
