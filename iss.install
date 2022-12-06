@@ -1,0 +1,118 @@
+<?php
+/**
+ * Implment hook_schema()
+ */
+function iss_schema() {
+
+  $schema['iss_user_invoice'] = [
+    'description' => 'User billing information.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'ID invoice data.',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'User ID connected with invoice data.',
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 128,
+        'description' => 'Name or Social reason.',
+      ],
+      'rfc' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 128,
+        'description' => 'User rfc.',
+      ],
+      'cp' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 5,
+        'description' => 'Postal Code.',
+      ],
+      'regimen_fiscal' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Regimen fiscal.',
+      ],
+      'cfdi' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 128,
+        'description' => 'CFDI.',
+      ]
+    ],
+    'primary key' => ['id'],
+  ];
+
+  $schema['iss_invoices'] = [
+    'description' => 'Details of invoices generated',
+    'fields' => [
+      'id' => [
+        'description' => 'The primary identifier for the record.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'uid' => [
+        'description' => 'The {users}.uid That generate this invoice.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'no_certificado' => [
+        'description' => "No certificado",
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'default' => '',
+      ],
+      'uuid' => [
+        'description' => "UUID.",
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'rfc_prov_certif' => [
+        'description' => "Rfc certificado.",
+        'type' => 'varchar',
+        'length' => 13,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'created' => [
+        'description' => 'Timestamp for when invoice was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'pdf' => [
+        'description' => 'Url pdf.',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 50,
+      ],
+      'xml' => [
+        'description' => 'Url xml.',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 50,
+      ],
+    ],
+    'primary key' => ['id'],
+      'indexes' => [
+        'user' => ['uid'],
+    ],
+  ];
+  return $schema;
+}
+  
