@@ -136,5 +136,159 @@ class ISSGetInvoiceDataForm extends FormBase {
       'cfdi' => $form_state->getValue('cfdi'),
     ])->execute();
     $this->messenger()->addMessage('Datos guardados correctamente');
-  } 
+  }
+
+  //funcion para generar factura
+  function generarFactura(){
+    $config = $this->config('iss.settings');
+    $client = \Drupal::httpClient();
+    try {
+      //obtener los datos del usuario
+      $conn = Database::getConnection();
+      $user = array();
+      $query = $conn->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
+      $user = $query->execute()->fetchAssoc();
+
+      //obtener los datos de la venta
+
+      # datos basicos SAT
+      $datosFactura = [];
+      $datosFactura['Version'] = '4.0';
+      $datosFactura['Exportacion'] = '01';
+      //$datosFactura['Serie'] = 'A';
+      //$datosFactura['Folio'] = '50';
+      $datosFactura['Fecha'] = 'AUTO';
+      $datosFactura['FormaPago'] = "99";
+      $datosFactura['CondicionesDePago'] = "";
+      $datosFactura['SubTotal'] = "200.00";
+      $datosFactura['Descuento'] = null;
+      $datosFactura['Moneda'] = 'MXN';
+      $datosFactura['TipoCambio'] = 1;
+      $datosFactura['Total'] = "232.00";
+      $datosFactura['TipoDeComprobante'] = 'I';
+      $datosFactura['MetodoPago'] = "PUE";
+      $datosFactura['LugarExpedicion'] = $config->get('lugar_expedicion');
+      # opciones de personalización (opcionales)
+      $datosFactura['LeyendaFolio'] = "FACTURA"; # leyenda opcional para poner a lado del folio: FACTURA, RECIBO, NOTA DE CREDITO, ETC.
+      # Regimen fiscal del emisor ligado al tipo de operaciones que representa este CFDI
+      $datosFactura['Emisor']['RegimenFiscal'] = $config->get('regimen_fiscal');
+      //$datosFactura['Emisor']['Rfc'] = 'EGP050812MV4';
+      //$datosFactura['Emisor']['Nombre'] = 'EDITORIAL GOLFO PACIFICO';
+
+      # Datos del receptor obligatorios
+      $datosFactura['Receptor']['Rfc'] = $user['rfc'];
+      $datosFactura['Receptor']['Nombre'] = $user['name'];
+      if($rfc == 'XAXX010101000') {
+        //para publico en general
+        $datosFactura['Receptor']['UsoCFDI'] = 'S01';//sin efectos fiscales
+        $datosFactura["Receptor"]["DomicilioFiscalReceptor"] = $config->get('lugar_expedicion');//debe ser el mismo que LugarExpedición
+        $datosFactura["Receptor"]["RegimenFiscalReceptor"] = '616';//sin obligaciones fiscales
+      } else {
+        $datosFactura['Receptor']['UsoCFDI'] = $user['cfdi'];
+        $datosFactura["Receptor"]["DomicilioFiscalReceptor"] = $user['cp'];
+        $datosFactura["Receptor"]["RegimenFiscalReceptor"] = $user['regimen_fiscal'];
+      }
+      
+      # Datos del receptor opcionales
+      $datosFactura['Receptor']['ResidenciaFiscal'] = null;
+      $datosFactura['Receptor']['NumRegIdTrib'] = null;
+      $datosFactura["Receptor"]["Calle"] = null;
+      $datosFactura["Receptor"]["NoExt"] = null;
+      $datosFactura["Receptor"]["NoInt"] = null;
+      $datosFactura["Receptor"]["Colonia"] = null;
+      $datosFactura["Receptor"]["Loacalidad"] = null;
+      $datosFactura["Receptor"]["Referencia"] = null;
+      $datosFactura["Receptor"]["Municipio"] = null;
+      $datosFactura["Receptor"]["Estado"] = null;
+      $datosFactura["Receptor"]["Pais"] = null;
+      $datosFactura["Receptor"]["CodigoPostal"] = null;
+
+      //si es publico en general incluir el nodo InformacionGlobal
+      if($rfc == 'XAXX010101000'){
+        $datosFactura["InformacionGlobal"]["Periodicidad"] = '01';
+        $datosFactura["InformacionGlobal"]["Meses"] = '12';
+        $datosFactura["InformacionGlobal"]["Año"] = '2022';
+      }
+
+      //conceptos
+      $datosFactura['Conceptos'][0]['ObjetoImp'] = '02';
+      $datosFactura['Conceptos'][0]['ClaveProdServ'] = '01010101';
+      //$datosFactura['Conceptos'][0]['NoIdentificacion'] = '01';
+      $datosFactura['Conceptos'][0]['Cantidad'] = 1;
+      $datosFactura['Conceptos'][0]['ClaveUnidad'] = 'ZZ';
+      //$datosFactura['Conceptos'][0]['Unidad'] = 'Pieza';
+      $datosFactura['Conceptos'][0]['Descripcion'] = 'Producto de prueba';
+      $datosFactura['Conceptos'][0]['ValorUnitario'] = '200.00';
+      $datosFactura['Conceptos'][0]['Importe'] = '200.00';
+      //$datosFactura['Conceptos'][0]['Descuento'] = null;
+
+      //impuestos
+      $datosFactura['Conceptos'][0]['Impuestos']['Traslados'][0]['Base'] = '200.00';
+      $datosFactura['Conceptos'][0]['Impuestos']['Traslados'][0]['Impuesto'] = '002'; //002 = IVA, 003 = IEPS
+      $datosFactura['Conceptos'][0]['Impuestos']['Traslados'][0]['TipoFactor'] = 'Tasa'; //Tasa, Cuota, Exento
+      $datosFactura['Conceptos'][0]['Impuestos']['Traslados'][0]['TasaOCuota'] = '0.160000';
+      $datosFactura['Conceptos'][0]['Impuestos']['Traslados'][0]['Importe'] = '32.00';
+
+      $datosFactura['Impuestos']['TotalImpuestosTrasladados'] = '32.00';
+      $datosFactura['Impuestos']['Traslados'][0]['Base'] = '200.00';
+      $datosFactura['Impuestos']['Traslados'][0]['Impuesto'] = '002'; //002 = IVA, 003 = IEPS
+      $datosFactura['Impuestos']['Traslados'][0]['TipoFactor'] = 'Tasa'; //Tasa, Cuota, Exento
+      $datosFactura['Impuestos']['Traslados'][0]['TasaOCuota'] = '0.160000';
+      $datosFactura['Impuestos']['Traslados'][0]['Importe'] = '32.00';
+
+      //conectar con el servicio
+      $request = $client->post($config->get('api_endpoint').'/api/v5/invoice/create', [
+        'headers' => ['X-Api-Key' => $config->get('api_key')],
+        'form_params' => [ 'json' => json_encode($datosFactura)]
+      ]);
+
+      $response_body = $request->getBody();
+      $data  = json_decode($response_body->getContents());
+      if($data->code == '200') {
+        //guardar los datos de la factura
+        $connection = \Drupal::Database();
+        $result = $connection->insert('iss_invoices')->fields([
+          'uid' => $this->currentUser()->id(),
+          'no_certificado' => $data->cfdi->NoCertificado,
+          'uuid' => $data->cfdi->UUID,
+          'rfc_prov_certif' => $data->cfdi->RfcProvCertif,
+          'created' => $data->cfdi->FechaTimbrado,
+          'pdf' => $data->cfdi->PDF,
+          'xml' => $data->cfdi->XML,
+        ])->execute();
+
+        //enviar la factura por email
+        return $this->enviarCFDI($data->message);
+      } else {
+        return $data->message ?? 'Ha ocurrido un error';
+      }
+    } catch (RequestException $e) {
+      $response = json_decode($e->getResponse()->getBody()->getContents());
+      return $response->message ?? 'Error al generar factura';
+    }
+  }
+
+  //funcion para generar factura por email
+  function enviarCFDI($uuid){
+    $client = \Drupal::httpClient();
+    $config = $this->config('iss.settings');
+    try {
+      //enviar la factura por correo
+      $request = $client->post($config->get('api_endpoint').'/api/v5/invoice/send', [
+        'headers' => [
+          'X-Api-Key' => $config->get('api_key'),
+          'uuid' => $uuid,
+          'recipient' => 'lramos@noticiasnet.mx',
+          'bbc' => '',
+          'message' => 'Enviar factura por correo',
+        ],
+      ]);
+      $response_body = $request->getBody();
+      $data  = json_decode($response_body->getContents());
+      return $data->message;
+    } catch (RequestException $e) {
+      $response = json_decode($e->getResponse()->getBody()->getContents());
+      return $response->message ?? 'Error al enviar factura';
+    }
+  }
 }
