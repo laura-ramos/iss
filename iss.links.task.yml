@@ -1,0 +1,5 @@
+iss.user_data_form:
+  route_name: iss.user_data_form
+  base_route: entity.user.canonical
+  title: 'Billing information'
+  weight: 4
