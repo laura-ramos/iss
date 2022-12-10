@@ -12,3 +12,17 @@ iss.user_data_form:
     _form: '\Drupal\iss\Form\ISSGetInvoiceDataForm'
   requirements:
     _user_is_logged_in: 'TRUE'
+iss.purchase_history:
+  path: '/user/{user}/purchases'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::purchaseHistory'
+    _title: 'Purchase history'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+iss.invoice:
+  path: '/user/invoice/{id}'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::createInvoice'
+    _title: 'Invoice'
+  requirements:
+    _user_is_logged_in: 'TRUE'
