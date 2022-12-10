@@ -2,3 +2,6 @@ administer iss:
   title: Administer ISS
   description: Perform administration tasks for the ISS invoicing service.
   restrict access: true
+view iss block:
+  title: View iss Block
+  description: View the ISS form.
