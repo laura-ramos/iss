@@ -14,3 +14,9 @@ iss.settings:
     lugar_expedicion:
       type: integer
       label: 'Lugar de expedición'
+    serie:
+      type: string
+      label: 'Serie'
+    folio:
+      type: string
+      label: 'Folio'

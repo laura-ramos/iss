@@ -77,6 +77,18 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('lugar_expedicion'),
       '#title' => $this->t('Lugar de expedición')
     ];
+    $form['iss_settings_invoice']['serie'] = [
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#default_value' => $config->get('serie'),
+      '#title' => $this->t('Serie')
+    ];
+    $form['iss_settings_invoice']['folio'] = [
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#default_value' => $config->get('folio'),
+      '#title' => $this->t('folio')
+    ];
 
 
     return parent::buildForm($form, $form_state);
@@ -92,6 +104,8 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       ->set('api_endpoint', $form_state->getValue('api_endpoint'))
       ->set('regimen_fiscal', $form_state->getValue('regimen_fiscal'))
       ->set('lugar_expedicion', $form_state->getValue('lugar_expedicion'))
+      ->set('serie', $form_state->getValue('serie'))
+      ->set('folio', $form_state->getValue('folio'))
       ->save();
     
     $this->messenger()->addMessage($this->t('The configuration options have been saved.'));
