@@ -1,7 +1,6 @@
 <?php
 namespace Drupal\iss\Controller;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use GuzzleHttp\Exception\RequestException;
@@ -55,7 +54,7 @@ class InvoiceController extends ControllerBase {
       '#type' => 'table',
       '#header' => $header_table,
       '#rows' => $rows,
-      '#empty' => $this->t('No hay compras'),
+      '#empty' => 'No hay compras',
     ];
     return $form;
   }
@@ -191,6 +190,7 @@ class InvoiceController extends ControllerBase {
                 $pdf =  $data->cfdi->PDF;
                 $xml =  $data->cfdi->XML;
                 $UUID =  $data->cfdi->UUID;
+                $created =  $data->cfdi->FechaTimbrado;
                 $connection->insert('iss_invoices')->fields([
                   'sid' => $sales['id'],
                   'folio' => $folio['folio'] ? $folio['folio'] + 1 : $config->get('folio'),
@@ -198,12 +198,12 @@ class InvoiceController extends ControllerBase {
                   'created' => $data->cfdi->FechaTimbrado,
                   'pdf' => $data->cfdi->PDF,
                   'xml' => $data->cfdi->XML,
-                  ])->execute();
+                ])->execute();
 
                 //enviar la factura por email
                 $this->messenger()->addMessage($this->sendInvoice($data->cfdi->UUID, $user['mail']));
                 $message = "<h5>Su factura ya fue generada</h5>
-                  <p>Folio Fiscal UUID: $UUID<br>Fecha:  <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
+                  <p>Folio Fiscal UUID: $UUID<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
               
               } else {
                 $this->messenger()->addMessage($data->message ?? 'Ha ocurrido un error');

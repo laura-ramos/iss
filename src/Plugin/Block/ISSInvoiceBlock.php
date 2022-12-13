@@ -25,7 +25,7 @@ class ISSInvoiceBlock extends BlockBase {
       return \Drupal::formBuilder()->getForm('\Drupal\iss\Form\ISSGetInvoiceDataForm');
     } else {
       return [
-        '#markup' => $this->t('Para generar tu factura inicia sesión'),
+        '#markup' => 'Para generar tu factura inicia sesión',
       ];
     }
   }
