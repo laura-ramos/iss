@@ -31,7 +31,7 @@ function iss_schema() {
         'length' => 128,
         'description' => 'User rfc.',
       ],
-      'cp' => [
+      'postal_code' => [
         'type' => 'varchar',
         'not null' => TRUE,
         'length' => 5,
@@ -48,6 +48,42 @@ function iss_schema() {
         'not null' => TRUE,
         'length' => 128,
         'description' => 'CFDI.',
+      ],
+      'mail' => [
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+        'description' => 'e-mail.',
+      ],
+      'address' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        'description' => 'ADDRESS.',
+      ],
+      'number_ext' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 50,
+        'description' => 'Number address.',
+      ],
+      'suburb' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        'description' => 'Suburb.',
+      ],
+      'city' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        'description' => 'City.',
+      ],
+      'state' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        'description' => 'State.',
       ]
     ],
     'primary key' => ['id'],
@@ -62,56 +98,51 @@ function iss_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
-      'uid' => [
-        'description' => 'The {users}.uid That generate this invoice.',
+      'sid' => [
+        'description' => 'The sale id.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ],
-      'no_certificado' => [
-        'description' => "No certificado",
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => FALSE,
-        'default' => '',
+      'folio' => [
+        'description' => 'Folio',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
       ],
       'uuid' => [
         'description' => "UUID.",
         'type' => 'varchar',
-        'length' => 32,
+        'length' => 100,
         'not null' => TRUE,
         'default' => '',
-      ],
-      'rfc_prov_certif' => [
-        'description' => "Rfc certificado.",
-        'type' => 'varchar',
-        'length' => 13,
-        'not null' => TRUE,
-        'default' => '',
-      ],
-      'created' => [
-        'description' => 'Timestamp for when invoice was created.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
       ],
       'pdf' => [
         'description' => 'Url pdf.',
         'type' => 'varchar',
         'not null' => TRUE,
-        'length' => 50,
+        'length' => 100,
       ],
       'xml' => [
         'description' => 'Url xml.',
         'type' => 'varchar',
         'not null' => TRUE,
-        'length' => 50,
+        'length' => 100,
+      ],
+      'created' => [
+        'description' => 'Timestamp for when invoice was created.',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 100,
+      ],
+      'cancelled' => [
+        'description' => 'If invoice was cancelled',
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
       ],
     ],
-    'primary key' => ['id'],
-      'indexes' => [
-        'user' => ['uid'],
-    ],
+    'primary key' => ['id']
   ];
   return $schema;
 }
