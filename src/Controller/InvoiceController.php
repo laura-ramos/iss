@@ -26,6 +26,7 @@ class InvoiceController extends ControllerBase {
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
       'date' => $this->t('Date'),
+      'receipt' => $this->t('Receipt'),
       'invoice' => $this->t('Invoice')
     );
     //select records from table ppss_sales
@@ -37,8 +38,8 @@ class InvoiceController extends ControllerBase {
     $rows = array();
     foreach($results as $data){
       $sale = json_decode($data->details);
-      $url_view = Url::fromRoute('iss.invoice', ['id' => $data->id], []);
-      $invoice = Link::fromTextAndUrl('Invoice', $url_view);
+      $url_invoice = Url::fromRoute('iss.invoice', ['id' => $data->id], []);
+      $url_receipt = Url::fromRoute('iss.receipt', ['id' => $data->id], []);
       //print the data from table
       $rows[] = array(
         'id' =>$data->id,
@@ -46,7 +47,8 @@ class InvoiceController extends ControllerBase {
         'total' => $sale->transactions[0]->amount->total,
         'platform' => $data->platform,
         'date' => date($data->created),
-        'invoice' => $invoice,
+        'receipt' => Link::fromTextAndUrl('Receipt', $url_receipt),
+        'invoice' => Link::fromTextAndUrl('Invoice', $url_invoice)
       );
     }
     //display data in site
@@ -96,7 +98,7 @@ class InvoiceController extends ControllerBase {
               $datosFactura['Serie'] = $config->get('serie');
               $datosFactura['Folio'] = $folio['folio'] ? $folio['folio'] + 1 : $config->get('folio');
               $datosFactura['Fecha'] = 'AUTO';
-              $datosFactura['FormaPago'] = "99";
+              $datosFactura['FormaPago'] = "06";//definir bien
               $datosFactura['CondicionesDePago'] = "";
               $datosFactura['SubTotal'] = $sale->transactions[0]->amount->details->subtotal;
               $datosFactura['Descuento'] = null;
@@ -253,5 +255,17 @@ class InvoiceController extends ControllerBase {
       $response = json_decode($e->getResponse()->getBody()->getContents());
       return $response->message ?? 'Error al enviar factura';
     }
+  }
+
+  public function receipt($id){
+    $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
+    $sales = $ppss_sales->execute()->fetchAssoc();
+    $details = json_decode($sales['details']);
+    //var_dump($sales['details']);
+    return [
+      '#theme' => 'receipt',
+      '#sale' => $sales,
+      '#details' => $details
+    ];
   }
 }

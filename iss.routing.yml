@@ -26,3 +26,10 @@ iss.invoice:
     _title: 'Invoice'
   requirements:
     _user_is_logged_in: 'TRUE'
+iss.receipt:
+  path: '/user/receipt/{id}'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::receipt'
+    _title: 'Receipt'
+  requirements:
+    _user_is_logged_in: 'TRUE'
