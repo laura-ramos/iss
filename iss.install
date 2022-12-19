@@ -67,6 +67,12 @@ function iss_schema() {
         'length' => 50,
         'description' => 'Number address.',
       ],
+      'number_int' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 50,
+        'description' => 'Number address.',
+      ],
       'suburb' => [
         'type' => 'varchar',
         'not null' => FALSE,

@@ -79,22 +79,24 @@ class ISSGetInvoiceDataForm extends FormBase {
         ];
         $form['name'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('Name'),
+          '#title' => 'Nombre o Razón Social',
           '#required' => TRUE,
           '#default_value' => $currentUser['name'] ?? '',
-          '#description' => 'Nombre completo de la persona fisica o moral.'
+          '#description' => 'Tal cual aparece en su constancia de situación fiscal'
         ];
         $form['rfc'] = [
           '#type' => 'textfield',
           '#title' => $this->t('RFC'),
           '#required' => TRUE,
           '#default_value' => $currentUser['rfc'] ?? '',
+          '#description' => 'Deberá señanal correctamente cada letra o número que conforma su RFC tal cual aparece en su constancia de situación fiscal'
         ];
         $form['postal_code'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('Postal code'),
+          '#title' => 'Código Postal',
           '#required' => true,
           '#default_value' => $currentUser['postal_code'] ?? '',
+          '#description' => 'Codigo postal de su domicilio fiscal aparece en la constancia de situación fiscal'
         ];
         $form['regimen_fiscal'] = [
           '#type' => 'select',
@@ -122,6 +124,7 @@ class ISSGetInvoiceDataForm extends FormBase {
           ],
           '#required' => true,
           '#default_value' => $currentUser['regimen_fiscal'] ?? '',
+          '#description' => 'Aparece en la constancia de situación fiscal'
         ];
         $form['cfdi'] = [
           '#type' => 'select',
@@ -157,45 +160,56 @@ class ISSGetInvoiceDataForm extends FormBase {
         ];
         $form['email'] = [
           '#type' => 'email',
-          '#title' => $this->t('Email address'),
+          '#title' => 'Email',
           '#required' => TRUE,
           '#default_value' => $currentUser['mail'] ?? $this->currentUser()->getEmail(),
           '#description' => "Email válido para recibir su factura"
         ];
         $form['address'] = [
           '#type' => 'details',
-          '#title' => $this->t('Address'),
+          '#title' => 'Dirección',
           '#open' => FALSE,
+          '#description' => "Los siguientes campos son opcionales"
         ];
         $form['address']['address'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('Address'),
+          '#title' => 'Calle',
           '#required' => FALSE,
           '#default_value' => $currentUser['address'] ?? '',
         ];
-        $form['address']['number'] = [
+        $form['address']['number_ext'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('Number'),
+          '#title' => 'Número exterior',
           '#required' => FALSE,
-          '#default_value' => $currentUser['number'] ?? '',
+          '#default_value' => $currentUser['number_ext'] ?? '',
+        ];
+        $form['address']['number_int'] = [
+          '#type' => 'textfield',
+          '#title' => 'Número interior',
+          '#required' => FALSE,
+          '#default_value' => $currentUser['number_int'] ?? '',
         ];
         $form['address']['suburb'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('Suburb'),
+          '#title' => 'Colonia',
           '#required' => FALSE,
           '#default_value' => $currentUser['suburb'] ?? '',
         ];
         $form['address']['city'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('City'),
+          '#title' => 'Municipio',
           '#required' => FALSE,
           '#default_value' => $currentUser['city'] ?? '',
         ];
         $form['address']['state'] = [
           '#type' => 'textfield',
-          '#title' => $this->t('State'),
+          '#title' => 'Estado',
           '#required' => FALSE,
           '#default_value' => $currentUser['state'] ?? '',
+        ];
+        $form['nota'] = [
+          '#type' => 'markup',
+          '#markup' => "<b>NOTA:</b> EN CASO DE NO PROPORCIONAR LA INFORMACIÓN NO SE PODRÁ GENERAR LA FACTURA SOLICITADA"
         ];
         $form['actions']['submit'] = [
           '#type' => 'submit',
@@ -223,7 +237,8 @@ class ISSGetInvoiceDataForm extends FormBase {
     $id_user = $this->currentUser()->id();
     //address
     $address = $form_state->getValue('address');
-    $number = $form_state->getValue('number');
+    $number_ext = $form_state->getValue('number_ext');
+    $number_int = $form_state->getValue('number_int');
     $suburb = $form_state->getValue('suburb');
     $city = $form_state->getValue('city');
     $state = $form_state->getValue('state');
@@ -241,7 +256,8 @@ class ISSGetInvoiceDataForm extends FormBase {
         'cfdi' => $cfdi,
         'mail' => $email,
         'address' => $address,
-        'number_ext' => $number,
+        'number_ext' => $number_ext,
+        'number_int' => $number_int,
         'suburb' => $suburb,
         'city' => $city,
         'state' => $state,
@@ -259,19 +275,35 @@ class ISSGetInvoiceDataForm extends FormBase {
         'cfdi' => $cfdi,
         'mail' => $email,
         'address' => $address,
-        'number_ext' => $number,
+        'number_ext' => $number_ext,
+        'number_int' => $number_int,
         'suburb' => $suburb,
         'city' => $city,
         'state' => $state,
       ])->execute();
 
       if($form_state->getValue('sale_id') != 0) {
-        //generar factura despues de registrar datos de facturacion
+        //generar factura despues de la compra
         $url = Url::fromRoute('iss.invoice', ['id' => $form_state->getValue('sale_id') ?? 0]);
         $redirect = new RedirectResponse($url->toString());
         $redirect->send();
       }
       $this->messenger()->addMessage($this->t('Your information have been successfully saved.'));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    if (!preg_match("/^[a-zA-Z0-9 ]+$/", $form_state->getValue('name'))) {
+      $form_state->setErrorByName('name', 'El Nombre o Razón Social no debe tener caracteres especiales.');
+    }
+    if (strlen($form_state->getValue('rfc')) < 13) {
+      $form_state->setErrorByName('rfc', 'El RFC debe tener 12 o 13 caracteres.');
+    }
+    if(strlen($form_state->getValue('postal_code')) != 5) {
+      $form_state->setErrorByName('postal_code', 'El código postal debe tener 5 caracteres.');
     }
   }
 
