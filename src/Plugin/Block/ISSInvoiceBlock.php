@@ -58,5 +58,25 @@ class ISSInvoiceBlock extends BlockBase {
     return 0;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function blockAccess(AccountInterface $account)
+  {
+    // If viewing a node, get the fully loaded node object.
+    $node = \Drupal::routeMatch()->getParameter('node');
+
+    if (!(is_null($node))) {
+      $request = \Drupal::request();
+      $requestUri = $request->getRequestUri();
+
+      if (strchr($requestUri, \Drupal::config('ppss.settings')->get('success_url'))) {
+        return AccessResult::allowedIfHasPermission($account, 'view iss block');
+      }
+      
+    }
+
+    return AccessResult::forbidden();
+  }
   
 }
