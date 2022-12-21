@@ -129,7 +129,7 @@ class IssApiService {
       $datosFactura['Impuestos']['Traslados'][0]['Impuesto'] = '002'; //002 = IVA, 003 = IEPS
       $datosFactura['Impuestos']['Traslados'][0]['TipoFactor'] = 'Tasa'; //Tasa, Cuota, Exento
       $datosFactura['Impuestos']['Traslados'][0]['TasaOCuota'] = '0.160000';
-      $datosFactura['Impuestos']['Traslados'][0]['Importe'] = $importe;
+      $datosFactura['Impuestos']['Traslados'][0]['Importe'] = $impuesto;
 //return $datosFactura;
       //conectar con el servicio
       $request = $client->post($config->get('api_endpoint').'/api/v5/invoice/create', [

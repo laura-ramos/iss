@@ -34,27 +34,6 @@ class ISSGetInvoiceDataForm extends FormBase {
       //get purchase user
       $sale_query = \Drupal::database()->select('ppss_sales', 's')->condition('uid', $this->currentUser()->id())->fields('s', ['id','details'])->orderBy('created', 'DESC');
       $sale_result = $sale_query->execute()->fetchAll();
-      $show_block = false;
-      $node = \Drupal::routeMatch()->getParameter('node');
-      if (!(is_null($node))) {
-        $request = \Drupal::request();
-        $requestUri = $request->getRequestUri();
-        if (strchr($requestUri, \Drupal::config('ppss.settings')->get('success_url'))) {
-          $show_block = true;
-        }
-      }
-      //mostrar solo el boton de generar factura
-      if ($currentUser > 0 && $show_block) {
-        $form['description_invoice'] = [
-          '#type' => 'markup',
-          '#markup' => "Da clic en el link para generar tu factura. "
-        ];
-        $form['invoice'] = [
-          '#type' => 'link',
-          '#title' => 'Invoice',
-          '#url' => Url::fromRoute('iss.invoice', ['id' => $sale_result[0]->id ?? 0])
-        ];
-      } else if(($show_block && !$currentUser > 0) or (!$show_block && $currentUser > 0) or (!$show_block && !$currentUser > 0)) {
         if(!$currentUser > 0){
           //si no existe datos del usuario llenar los campos con los datos de la venta
           if($sale_result[0]->details ?? null) {
@@ -66,11 +45,6 @@ class ISSGetInvoiceDataForm extends FormBase {
               'suburb' => $sale->payer->payer_info->shipping_address->line2,
               'city' => $sale->payer->payer_info->shipping_address->city,
               'state' => $sale->payer->payer_info->shipping_address->state
-            ];
-            $form['sale_id'] = [
-              '#type' => 'hidden',
-              '#required' => FALSE,
-              '#default_value' => $show_block ? $sale_result[0]->id ?? 0 : 0,
             ];
           }
         }
@@ -215,7 +189,6 @@ class ISSGetInvoiceDataForm extends FormBase {
           '#type' => 'submit',
           '#value' => $this->t('Save'),
         ];
-      }
     } else {
       $message = "ISS module don't has configured properly, please review your settings.";
       \Drupal::logger('system')->alert($message);
@@ -282,12 +255,6 @@ class ISSGetInvoiceDataForm extends FormBase {
         'state' => $state,
       ])->execute();
 
-      if($form_state->getValue('sale_id') != 0) {
-        //generar factura despues de la compra
-        $url = Url::fromRoute('iss.invoice', ['id' => $form_state->getValue('sale_id') ?? 0]);
-        $redirect = new RedirectResponse($url->toString());
-        $redirect->send();
-      }
       $this->messenger()->addMessage($this->t('Your information have been successfully saved.'));
     }
   }
