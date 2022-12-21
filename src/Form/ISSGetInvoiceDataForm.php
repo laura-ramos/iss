@@ -39,7 +39,7 @@ class ISSGetInvoiceDataForm extends FormBase {
       if (!(is_null($node))) {
         $request = \Drupal::request();
         $requestUri = $request->getRequestUri();
-        if (strchr($requestUri, '/venta/exitosa')) {
+        if (strchr($requestUri, \Drupal::config('ppss.settings')->get('success_url'))) {
           $show_block = true;
         }
       }

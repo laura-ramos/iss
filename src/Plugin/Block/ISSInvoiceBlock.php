@@ -42,7 +42,7 @@ class ISSInvoiceBlock extends BlockBase {
       $request = \Drupal::request();
       $requestUri = $request->getRequestUri();
 
-      if (strchr($requestUri, '/venta/exitosa')) {
+      if (strchr($requestUri, \Drupal::config('ppss.settings')->get('success_url'))) {
         return AccessResult::allowedIfHasPermission($account, 'view iss block');
       }
       

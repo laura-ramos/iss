@@ -1,12 +1,14 @@
 <div>
-  <div>Username: {{sale.mail}}</div>
+  <div>Username: {{sale.user}}</div>
   <div>Plataforma: {{sale.platform}}</div>
-  <div>ID: {{details.id}}</div>
-  <div>Fecha: {{details.create_time}}</div>
-  {{sales.details[transactions]}}
-  {% for item in sales.details.transactions %}
-    <div>{{ item }} </div>
-  {% endfor %}
+  <div>Fecha: {{sale.created}}</div>
+  Detalles
+  <table>
+    <tr>
+      <td>{{sale.product}}</td>
+      <td>{{sale.total}}</td>
+    </tr>
+  </table>
   <button onclick="window.print();return false;" >Imprimir Recibo</button>
 </div>
    

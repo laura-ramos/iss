@@ -1,0 +1,4 @@
+services:
+  iss.api_service:
+    class: Drupal\iss\IssApiService
+    arguments: ['@database']
