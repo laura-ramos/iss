@@ -21,7 +21,6 @@ class InvoiceController extends ControllerBase {
   public function purchaseHistory() {
     //create table header
     $header_table = array(
-      'id'=>    $this->t('ID'),
       'name' => $this->t('Name'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -42,9 +41,8 @@ class InvoiceController extends ControllerBase {
       $url_receipt = Url::fromRoute('iss.receipt', ['id' => $data->id], []);
       //print the data from table
       $rows[] = array(
-        'id' =>$data->id,
         'name' => $sale->description,
-        'total' => '$'.$sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        'total' => $sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value,
         'platform' => $data->platform,
         'date' => date('d-m-Y', $data->created),
         'receipt' => Link::fromTextAndUrl('Receipt', $url_receipt),

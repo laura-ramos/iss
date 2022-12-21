@@ -183,7 +183,7 @@ class ISSGetInvoiceDataForm extends FormBase {
         ];
         $form['nota'] = [
           '#type' => 'markup',
-          '#markup' => "<b>NOTA:</b> EN CASO DE NO PROPORCIONAR LA INFORMACIÓN NO SE PODRÁ GENERAR LA FACTURA SOLICITADA"
+          '#markup' => "<b>NOTA:</b> EN CASO DE NO PROPORCIONAR LA INFORMACIÓN NO SE PODRÁ GENERAR LA FACTURA SOLICITADA<br>"
         ];
         $form['actions']['submit'] = [
           '#type' => 'submit',
@@ -237,6 +237,9 @@ class ISSGetInvoiceDataForm extends FormBase {
       ])->condition('uid', $id_user, '=')->execute();
 
       $this->messenger()->addMessage($this->t('Your changes have been successfully saved.'));
+      $url = Url::fromRoute('iss.purchase_history', ['user' => $id_user]);
+      $redirect = new RedirectResponse($url->toString());
+      $redirect->send();
     } else {
       //insert data
       \Drupal::database()->insert('iss_user_invoice')->fields([
@@ -256,6 +259,10 @@ class ISSGetInvoiceDataForm extends FormBase {
       ])->execute();
 
       $this->messenger()->addMessage($this->t('Your information have been successfully saved.'));
+      $url = Url::fromRoute('iss.purchase_history', ['user' => $id_user]);
+      $redirect = new RedirectResponse($url->toString());
+      $redirect->send();
+
     }
   }
 
