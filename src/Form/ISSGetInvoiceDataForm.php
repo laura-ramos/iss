@@ -270,10 +270,10 @@ class ISSGetInvoiceDataForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    if (!preg_match("/^[a-zA-Z0-9 ]+$/", $form_state->getValue('name'))) {
-      $form_state->setErrorByName('name', 'El Nombre o Razón Social no debe tener caracteres especiales.');
+    if (!preg_match("/^[A-Z0-9ÑÁÉÍÓÚ ]+$/", $form_state->getValue('name'))) {
+      $form_state->setErrorByName('name', 'El Nombre o Razón Social debe estar en mayúsculas y no tener caracteres especiales.');
     }
-    if (strlen($form_state->getValue('rfc')) < 13) {
+    if (strlen($form_state->getValue('rfc')) < 12 || strlen($form_state->getValue('rfc')) > 13) {
       $form_state->setErrorByName('rfc', 'El RFC debe tener 12 o 13 caracteres.');
     }
     if(strlen($form_state->getValue('postal_code')) != 5) {

@@ -40,7 +40,7 @@ class ISSInvoiceBlock extends BlockBase {
       ];
       $data['url'] = [
         '#type' => 'link',
-        '#title' => 'Generar Factura',
+        '#title' => $currentUser > 0 ? "Generar Factura" : "Datos Fiscales",
         '#url' => $url,
       ];
       return $data;

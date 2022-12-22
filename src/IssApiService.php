@@ -98,7 +98,7 @@ class IssApiService {
         $datosFactura["Receptor"]["DomicilioFiscalReceptor"] = $config->get('lugar_expedicion');//debe ser el mismo que LugarExpedición
         $datosFactura["Receptor"]["RegimenFiscalReceptor"] = '616';//sin obligaciones fiscales
 
-        $datosFactura["InformacionGlobal"]["Periodicidad"] = '01';
+        $datosFactura["InformacionGlobal"]["Periodicidad"] = '01';//01-Diaria, 02-Semanal, 03-Quincenal, 04-Mensual o 05-Bimestral
         $datosFactura["InformacionGlobal"]["Meses"] = date('m');
         $datosFactura["InformacionGlobal"]["Año"] = date('Y');
 
