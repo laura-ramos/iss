@@ -130,7 +130,6 @@ class IssApiService {
       $datosFactura['Impuestos']['Traslados'][0]['TipoFactor'] = 'Tasa'; //Tasa, Cuota, Exento
       $datosFactura['Impuestos']['Traslados'][0]['TasaOCuota'] = '0.160000';
       $datosFactura['Impuestos']['Traslados'][0]['Importe'] = $impuesto;
-//return $datosFactura;
       //conectar con el servicio
       $request = $client->post($config->get('api_endpoint').'/api/v5/invoice/create', [
         'headers' => ['X-Api-Key' => $config->get('api_key')],
@@ -148,6 +147,7 @@ class IssApiService {
           'created' => $data->cfdi->FechaTimbrado,
           'pdf' => $data->cfdi->PDF,
           'xml' => $data->cfdi->XML,
+          'p_general' => $p_general ? 0 : 1,
         ])->execute();
         if(!$p_general){
           $this->sendInvoice($data->cfdi->UUID, $user['mail']);
@@ -190,33 +190,31 @@ class IssApiService {
     $first_day = strtotime(date("Y-m-01"));
     $today = date("Y-m-d");
     $last_day = strtotime(date("Y-m-t")."- 1 days");
-    //if($today == date('Y-m-d', $last_day)) {
-    if($today == '2022-12-18') {
+    if($today == date('Y-m-d', $last_day)) {
+    //if($today == '2022-12-24') {
       //obtener ppss_sales que no han sido facturados
       $query = $this->database->select('ppss_sales', 's');
       $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
       $query->condition('s.created', array($first_day, $last_day), 'BETWEEN');
-      //$query->condition('s.id', 5, '=');
       $query->fields('s', ['id','uid','mail']);
       $query->fields('i',['uuid']);
       $query->range(0, 50);
-      $index = 0;
+      $num = 0;
       $results = $query->execute()->fetchAll();
-      //return $results;
       foreach($results as $result) {
         if(!$result->uuid) {
-          $index = $index + 1;
+          $num += 1;//contador
           //generar facturas
           $invoice = $this->createInvoice(true, $result->id);
           if($invoice->code ?? false && $invoice->code == '200') {
-            $index = $index + 1;
+            $num = $num + 1;
           } else {
             \Drupal::logger('ISS')->error('Error al generar factura de la venta '.$result->id.'-'.$invoice);
           }
-         //\Drupal::logger('ISS')->error('Generar facturas de publico en general'); 
+         //\Drupal::logger('ISS')->error('Generar factura publico en general'); 
         }
       }
-      \Drupal::logger('ISS')->info('Se generaron '.$index.' facturas');
+      \Drupal::logger('ISS')->info('Se generaron '.$num.' facturas');
     }
   }
 }

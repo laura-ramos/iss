@@ -147,6 +147,12 @@ function iss_schema() {
         'not null' => FALSE,
         'length' => 100,
       ],
+      'p_general' => [
+        'description' => 'Type invoice',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ],
     ],
     'primary key' => ['id']
   ];

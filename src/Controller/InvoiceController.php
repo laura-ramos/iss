@@ -25,13 +25,16 @@ class InvoiceController extends ControllerBase {
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
       'date' => $this->t('Date'),
+      'status' => $this->t('Status'),
       'receipt' => $this->t('Receipt'),
       'invoice' => $this->t('Invoice')
     );
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
+    $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
     $query->condition('uid', $this->currentUser()->id());
-    $query->fields('s', ['id','uid','mail','platform','details', 'created']);
+    $query->fields('s', ['id','uid','mail','platform','details', 'created', 'status']);
+    $query->fields('i',['uuid','p_general']);
     $results = $query->execute()->fetchAll();
 
     $rows = array();
@@ -45,8 +48,9 @@ class InvoiceController extends ControllerBase {
         'total' => $sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value,
         'platform' => $data->platform,
         'date' => date('d-m-Y', $data->created),
+        'status' => $data->status ? 'Activo' : 'Inactivo',
         'receipt' => Link::fromTextAndUrl('Receipt', $url_receipt),
-        'invoice' => Link::fromTextAndUrl('Invoice', $url_invoice)
+        'invoice' => $data->p_general ? '' : Link::fromTextAndUrl('Invoice', $url_invoice)
       );
     }
     //display data in site
