@@ -186,10 +186,12 @@ class IssApiService {
     }
   }
 
+  //funcion para generar facturas a público en general al final de mes
   public function globalInvoice() {
-    $first_day = strtotime(date("Y-m-01"));
+    $config =  \Drupal::config('iss.settings');
+    $first_day = strtotime(date("Y-m-01"));//first day of the current month 
     $today = date("Y-m-d");
-    $last_day = strtotime(date("Y-m-t")."- 1 days");
+    $last_day = strtotime(date("Y-m-t").$config->get('stamp_date'));//last day of the current month 
     if($today == date('Y-m-d', $last_day)) {
     //if($today == '2022-12-24') {
       //obtener ppss_sales que no han sido facturados
@@ -198,13 +200,12 @@ class IssApiService {
       $query->condition('s.created', array($first_day, $last_day), 'BETWEEN');
       $query->fields('s', ['id','uid','mail']);
       $query->fields('i',['uuid']);
-      $query->range(0, 50);
+      $query->range(0, $config->get('num_rows'));
       $num = 0;
       $results = $query->execute()->fetchAll();
       foreach($results as $result) {
         if(!$result->uuid) {
           $num += 1;//contador
-          //generar facturas
           $invoice = $this->createInvoice(true, $result->id);
           if($invoice->code ?? false && $invoice->code == '200') {
             $num = $num + 1;

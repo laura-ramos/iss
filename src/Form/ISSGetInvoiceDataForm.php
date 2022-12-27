@@ -39,7 +39,7 @@ class ISSGetInvoiceDataForm extends FormBase {
           if($sale_result[0]->details ?? null) {
             $sale = json_decode($sale_result[0]->details);
             $currentUser = [
-              'name' => $sale->payer->payer_info->first_name.' '.$sale->payer->payer_info->last_name,
+              'name' => strtoupper($sale->payer->payer_info->first_name.' '.$sale->payer->payer_info->last_name),
               'postal_code' => $sale->payer->payer_info->shipping_address->postal_code,
               'address' => $sale->payer->payer_info->shipping_address->line1,
               'suburb' => $sale->payer->payer_info->shipping_address->line2,
@@ -237,9 +237,7 @@ class ISSGetInvoiceDataForm extends FormBase {
       ])->condition('uid', $id_user, '=')->execute();
 
       $this->messenger()->addMessage($this->t('Your changes have been successfully saved.'));
-      $url = Url::fromRoute('iss.purchase_history', ['user' => $id_user]);
-      $redirect = new RedirectResponse($url->toString());
-      $redirect->send();
+      $form_state->setRedirect('iss.purchase_history', ['user' => $id_user]);
     } else {
       //insert data
       \Drupal::database()->insert('iss_user_invoice')->fields([
@@ -259,10 +257,7 @@ class ISSGetInvoiceDataForm extends FormBase {
       ])->execute();
 
       $this->messenger()->addMessage($this->t('Your information have been successfully saved.'));
-      $url = Url::fromRoute('iss.purchase_history', ['user' => $id_user]);
-      $redirect = new RedirectResponse($url->toString());
-      $redirect->send();
-
+      $form_state->setRedirect('iss.purchase_history', ['user' => $id_user]);
     }
   }
 

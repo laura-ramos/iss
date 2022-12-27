@@ -7,5 +7,6 @@ configure: iss.admin_settings_form
 
 dependencies:
   - drupal:block
+  - drupal:ppss
 
 version: 0.1

@@ -81,7 +81,7 @@ class InvoiceController extends ControllerBase {
         $message = "<h5>Su factura ya fue generada</h5>
           <p>Folio Fiscal UUID: $uuid<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
       } else {
-        //generar la factura si la fecha 
+        //Validar la fecha de la compra
         $first_day = strtotime(date("Y-m-01"));
         $last_day = strtotime(date("Y-m-t")."- 1 days");
         if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
@@ -130,6 +130,7 @@ class InvoiceController extends ControllerBase {
       "created" => date("d-m-Y",$sales["created"]),
       "product" => $details->description,
       "total" => $details->plan->payment_definitions[0]->amount->value + $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+      "details" => $details->plan->payment_definitions[0]
     ];
     return [
       '#theme' => 'receipt',
