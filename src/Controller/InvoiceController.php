@@ -65,54 +65,62 @@ class InvoiceController extends ControllerBase {
 
   //create purchase invoice
   public function createInvoice($id){
-    //validate user purchase
-    $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
-    $sales = $ppss_sales->execute()->fetchAssoc();
-    $message = '';
-    if($sales > 0) {
-      $query_invoice = \Drupal::database()->select('iss_invoices', 'i')->condition('sid', $id)->fields('i');
-      $invoice = $query_invoice->execute()->fetchAssoc();
-      //check if an invoice already exists
-      if($invoice > 0) {
-        $uuid =  $invoice['uuid'];
-        $pdf =  $invoice['pdf'];
-        $xml =  $invoice['xml'];
-        $created =  $invoice['created'];
-        $message = "<h5>Su factura ya fue generada</h5>
-          <p>Folio Fiscal UUID: $uuid<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
-      } else {
-        //Validar la fecha de la compra
-        $first_day = strtotime(date("Y-m-01"));
-        $last_day = strtotime(date("Y-m-t")."- 1 days");
-        if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
-          $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
-          $user = $query_user->execute()->fetchAssoc();
-          $url = Url::fromRoute('iss.user_data_form', ['user' => $this->currentUser()->id()]);
-          if($user > 0) {
-            $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
-            //$this->messenger()->addMessage($invoice);
-            if($invoice->code ?? false && $invoice->code == '200') {
-              $pdf =  $invoice->cfdi->PDF;
-              $xml =  $invoice->cfdi->XML;
-              $UUID =  $invoice->cfdi->UUID;
-              $created =  $invoice->cfdi->FechaTimbrado;
-              $message = "<h5>Su factura ya fue generada</h5><p>Folio Fiscal UUID: $UUID<br>Fecha: $created <br> 
-              <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
+    $config = $this->config('iss.settings');
+    $api_key = $config->get('api_key');
+    $api_endpoint = $config->get('api_endpoint');
+    if (!(empty($api_key) || empty($api_endpoint))) {
+      //validate user purchase
+      $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
+      $sales = $ppss_sales->execute()->fetchAssoc();
+      $message = '';
+      if($sales > 0) {
+        $query_invoice = \Drupal::database()->select('iss_invoices', 'i')->condition('sid', $id)->fields('i');
+        $invoice = $query_invoice->execute()->fetchAssoc();
+        //check if an invoice already exists
+        if($invoice > 0) {
+          $uuid =  $invoice['uuid'];
+          $pdf =  $invoice['pdf'];
+          $xml =  $invoice['xml'];
+          $created =  $invoice['created'];
+          $message = "<h5>Su factura ya fue generada</h5>
+            <p>Folio Fiscal UUID: $uuid<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
+        } else {
+          //Validar la fecha de la compra
+          $first_day = strtotime(date("Y-m-01"));
+          $last_day = strtotime(date("Y-m-t")."- 1 days");
+          if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
+            $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
+            $user = $query_user->execute()->fetchAssoc();
+            $url = Url::fromRoute('iss.user_data_form', ['user' => $this->currentUser()->id()]);
+            if($user > 0) {
+              $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
+              //$this->messenger()->addMessage($invoice);
+              if($invoice->code ?? false && $invoice->code == '200') {
+                $pdf =  $invoice->cfdi->PDF;
+                $xml =  $invoice->cfdi->XML;
+                $UUID =  $invoice->cfdi->UUID;
+                $created =  $invoice->cfdi->FechaTimbrado;
+                $message = "<h5>Su factura ya fue generada</h5><p>Folio Fiscal UUID: $UUID<br>Fecha: $created <br> 
+                <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
+              } else {
+                $this->messenger()->addError($invoice);
+                $message = "<b>Error al generar factura:</b> Asegúrate de contar con datos fiscales válidos <a href=".$url->toString().">Datos fiscales</a>";
+              }
             } else {
-              $this->messenger()->addError($invoice);
-              $message = "<b>Error al generar factura:</b> Asegúrate de contar con datos fiscales válidos <a href=".$url->toString().">Datos fiscales</a>";
+              $this->messenger()->addError($this->t('Your billing information is missing'));
+              $message = "Favor de registrar tus datos fiscales en <a href=".$url->toString().">Datos fiscales</a>";
             }
           } else {
-            $this->messenger()->addError($this->t('Your billing information is missing'));
-            $message = "Favor de registrar tus datos fiscales en <a href=".$url->toString().">Datos fiscales</a>";
+            $this->messenger()->addWarning('No puedes generar facturas de fechas anteriones, favor de comunicarte con el administrador');
           }
-        } else {
-          $this->messenger()->addWarning('No puedes generar facturas de fechas anteriones, favor de comunicarte con el administrador');
         }
+      } else  {
+        $this->messenger()->addWarning($this->t('Access denied'));
+        $message = "<p>You are not authorized to access this page.</p>";
       }
-    } else  {
-      $this->messenger()->addWarning($this->t('Access denied'));
-      $message = "<p>You are not authorized to access this page.</p>";
+    } else {
+      $message = "<b>Error: </b>ISS module don't has configured properly, please review your settings.";
+      \Drupal::logger('system')->alert($message);
     }
     return [
       '#type' => 'markup',
