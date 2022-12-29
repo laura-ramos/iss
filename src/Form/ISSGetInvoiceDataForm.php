@@ -26,13 +26,14 @@ class ISSGetInvoiceDataForm extends FormBase {
     $config = $this->config('iss.settings');
     $api_key = $config->get('api_key');
     $api_endpoint = $config->get('api_endpoint');
+    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? $user : $this->currentUser()->id();
 
     if (!(empty($api_key) || empty($api_endpoint))) {
       //get user data
-      $query = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
+      $query = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $user_id)->fields('i');
       $currentUser = $query->execute()->fetchAssoc();
       //get purchase user
-      $sale_query = \Drupal::database()->select('ppss_sales', 's')->condition('uid', $this->currentUser()->id())->fields('s', ['id','details'])->orderBy('created', 'DESC');
+      $sale_query = \Drupal::database()->select('ppss_sales', 's')->condition('uid', $user_id)->fields('s', ['id','details'])->orderBy('created', 'DESC');
       $sale_result = $sale_query->execute()->fetchAll();
         if(!$currentUser > 0){
           //si no existe datos del usuario llenar los campos con los datos de la venta
@@ -44,12 +45,17 @@ class ISSGetInvoiceDataForm extends FormBase {
               'address' => $sale->payer->payer_info->shipping_address->line1,
               'suburb' => $sale->payer->payer_info->shipping_address->line2,
               'city' => $sale->payer->payer_info->shipping_address->city,
-              'state' => $sale->payer->payer_info->shipping_address->state
+              'state' => $sale->payer->payer_info->shipping_address->state,
+              'mail' => $sale->payer->payer_info->email
             ];
           }
         }
         $form['description'] = [
           '#markup' => "<b>Nota:</b> Asegúrate de contar con datos fiscales válidos, los cuales puedes obtener de la constancia de situación fiscal o Cédula de Identificación Fiscal CIF."
+        ];
+        $form['id'] = [
+          '#type' => 'hidden',
+          '#default_value' => $user_id,
         ];
         $form['name'] = [
           '#type' => 'textfield',
@@ -70,7 +76,7 @@ class ISSGetInvoiceDataForm extends FormBase {
           '#title' => 'Código Postal',
           '#required' => true,
           '#default_value' => $currentUser['postal_code'] ?? '',
-          '#description' => 'Codigo postal de su domicilio fiscal aparece en la constancia de situación fiscal'
+          '#description' => 'Código postal de su domicilio fiscal aparece en la constancia de situación fiscal'
         ];
         $form['regimen_fiscal'] = [
           '#type' => 'select',
@@ -136,7 +142,7 @@ class ISSGetInvoiceDataForm extends FormBase {
           '#type' => 'email',
           '#title' => 'Email',
           '#required' => TRUE,
-          '#default_value' => $currentUser['mail'] ?? $this->currentUser()->getEmail(),
+          '#default_value' => $currentUser['mail'] ?? '',
           '#description' => "Email válido para recibir su factura"
         ];
         $form['address'] = [
@@ -207,7 +213,7 @@ class ISSGetInvoiceDataForm extends FormBase {
     $regimen_fiscal = $form_state->getValue('regimen_fiscal');
     $cfdi = $form_state->getValue('cfdi');
     $email = $form_state->getValue('email');
-    $id_user = $this->currentUser()->id();
+    $id_user = \Drupal::currentUser()->hasPermission('access user profiles') ? $form_state->getValue('id') : $this->currentUser()->id();
     //address
     $address = $form_state->getValue('address');
     $number_ext = $form_state->getValue('number_ext');
@@ -216,7 +222,7 @@ class ISSGetInvoiceDataForm extends FormBase {
     $city = $form_state->getValue('city');
     $state = $form_state->getValue('state');
 
-    $query = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
+    $query = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $id_user)->fields('i');
     $num_rows = $query->countQuery()->execute()->fetchField();
 
     if( $num_rows > 0) {
