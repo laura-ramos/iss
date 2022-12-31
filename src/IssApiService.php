@@ -147,7 +147,7 @@ class IssApiService {
           'created' => $data->cfdi->FechaTimbrado,
           'pdf' => $data->cfdi->PDF,
           'xml' => $data->cfdi->XML,
-          'p_general' => $p_general ? 0 : 1,
+          'p_general' => $p_general ? 1 : 0,
         ])->execute();
         if(!$p_general){
           $this->sendInvoice($data->cfdi->UUID, $user['mail']);
@@ -193,7 +193,6 @@ class IssApiService {
     $today = date("Y-m-d");
     $last_day = strtotime(date("Y-m-t").$config->get('stamp_date'));//last day of the current month 
     if($today == date('Y-m-d', $last_day)) {
-    //if($today == '2022-12-24') {
       //obtener ppss_sales que no han sido facturados
       $query = $this->database->select('ppss_sales', 's');
       $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
@@ -212,10 +211,11 @@ class IssApiService {
           } else {
             \Drupal::logger('ISS')->error('Error al generar factura de la venta '.$result->id.'-'.$invoice);
           }
-         //\Drupal::logger('ISS')->error('Generar factura publico en general'); 
         }
       }
-      \Drupal::logger('ISS')->info('Se generaron '.$num.' facturas');
+      if($num > 0) {
+        \Drupal::logger('ISS')->info('Se generaron '.$num.' facturas publico en general');
+      }
     }
   }
 }
