@@ -157,8 +157,14 @@ class IssApiService {
         return $data->message ?? 'Ha ocurrido un error';
       }
     } catch (RequestException $e) {
-      $response = json_decode($e->getResponse()->getBody()->getContents());
-      return $response->message ?? 'Error al generar factura';
+      if ($e->hasResponse()) {
+        $exception = $e->getResponse()->getBody();
+        $exception = json_decode($exception);
+        return $exception->message ?? 'Error al generar factura';
+      } else {
+        \Drupal::logger('ISS')->error($e->getMessage());
+        return 'Error al generar factura';
+      }
     }
   }
 
@@ -181,8 +187,14 @@ class IssApiService {
       $data  = json_decode($response_body->getContents());
       return $data->message;
     } catch (RequestException $e) {
-      $response = json_decode($e->getResponse()->getBody()->getContents());
-      return $response->message ?? 'Error al enviar factura';
+      if ($e->hasResponse()) {
+        $exception = $e->getResponse()->getBody();
+        $exception = json_decode($exception);
+        return $exception->message ?? 'Error al enviar factura';
+      } else {
+        \Drupal::logger('ISS')->error($e->getMessage());
+        return 'Error al enviar factura';
+      }
     }
   }
 
