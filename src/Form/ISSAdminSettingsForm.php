@@ -49,14 +49,13 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $config->get('api_endpoint'),
-      '#title' => $this->t('Endpoint')
+      '#title' => 'Endpoint'
     ];
     $form['iss_settings']['api_key'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
       '#title' => $this->t('Api Key'),
       '#default_value' => $config->get('api_key'),
-      '#description' => $this->t('Copy the Api Key here.'),
     ];
 
     $form['iss_settings_invoice'] = [
