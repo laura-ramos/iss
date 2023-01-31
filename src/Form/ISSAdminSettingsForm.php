@@ -35,7 +35,7 @@ class ISSAdminSettingsForm extends ConfigFormBase {
 
     $form['iss_settings'] = [
       '#type' => 'details',
-      '#title' => $this->t('Iss settings'),
+      '#title' => $this->t('ISS settings'),
       '#open' => TRUE,
       '#description' => $this->t('You need to first create a Account at @factura_digital',[
         '@factura_digital' => Link::fromTextAndUrl('Factura Digital', Url::fromUri('https://app.facturadigital.com.mx/registro', [

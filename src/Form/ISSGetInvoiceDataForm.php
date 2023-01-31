@@ -131,13 +131,13 @@ class ISSGetInvoiceDataForm extends FormBase {
         'S01' => 'S01-Sin Efectos Fiscales',
       ],
       '#required' => true,
-      '#default_value' => $currentUser['cfdi'] ?? '',
+      '#default_value' => $currentUser['cfdi'] ?? 'G03',
     ];
     $form['email'] = [
       '#type' => 'email',
       '#title' => 'Email',
       '#required' => TRUE,
-      '#default_value' => $currentUser['mail'] ?? '',
+      '#default_value' => $currentUser['mail'] ?? \Drupal::currentUser()->getEmail(),
       '#description' => "Email válido para recibir su factura"
     ];
     $form['address'] = [
