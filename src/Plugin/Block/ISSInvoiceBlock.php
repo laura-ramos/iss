@@ -29,24 +29,36 @@ class ISSInvoiceBlock extends BlockBase {
         $sale_query = \Drupal::database()->select('ppss_sales', 's')->condition('uid', \Drupal::currentUser()->id())->fields('s', ['id','details'])->orderBy('created', 'DESC');
         $sale_result = $sale_query->execute()->fetchAll();
         $url = Url::fromRoute('iss.invoice', ["id" => $sale_result[0]->id]);
-        $description = "Da clic para generar su factura<br>";
+        $description = "<br>Da click en el botón para generar tu factura.<br><br>
+        <b>Nota:</b> En caso de no facturar al momento de la compra, tienes hasta el penúltimo día del mes para generarla, de lo contrario, se emite como factura para Público en General.";
       } else {
         $url = Url::fromRoute('iss.user_data_form', ["user" => \Drupal::currentUser()->id()]);
-        $description = "Para generar su factura debe registrar sus datos fiscales<br>";
+        $description = "<br>Favor de proporcionar sus datos fiscales tal como aparece en su <a href='https://www.sat.gob.mx/aplicacion/53027/genera-tu-constancia-de-situacion-fiscal' target='_blank'>Constancia de Situación Fiscal</a> para generarla correctamente.<br><br>
+        <b>Nota:</b> En caso de no facturar al momento de la compra, tienes hasta el penúltimo día del mes para generarla, de lo contrario, se emite como factura para Público en General.";
       }
+      $data['title'] = [
+        '#type' => 'markup',
+        '#markup' => "<h3>Información sobre Facturación</h3>"
+      ];
+      $data['url'] = [
+        '#type' => 'link',
+        '#title' => $currentUser > 0 ? "Generar Factura" : "Capturar Datos Fiscales",
+        '#url' => $url,
+        '#attributes' => [
+          'class' => [
+            'button',
+          ],
+        ]
+      ];
       $data['description'] = [
         '#type' => 'markup',
         '#markup' => $description
       ];
-      $data['url'] = [
-        '#type' => 'link',
-        '#title' => $currentUser > 0 ? "Generar Factura" : "Datos Fiscales",
-        '#url' => $url,
-      ];
       return $data;
     } else {
       return [
-        '#markup' => 'Para generar tu factura inicia sesión',
+        '#markup' => '<h3>Información sobre Facturación</h3>Para generar tu factura es necesario <a href="/user/login">iniciar sesión</a> y en la opción de facturación  favor de proporcionar tus datos fiscales  tal como aparece en tu Constancia de Situación Fiscal para generarla correctamente.<br><br>
+        <b>Nota:</b> En caso de no facturar al momento de la compra, tienes hasta el penúltimo día del mes para generarla, de lo contrario, se emite como factura para Público en General.',
       ];
     }
   }

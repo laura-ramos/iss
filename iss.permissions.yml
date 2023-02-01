@@ -4,4 +4,4 @@ administer iss:
   restrict access: true
 view iss block:
   title: View ISS Block
-  description: View the ISS form.
+  description: View the ISS button generate invoice.
