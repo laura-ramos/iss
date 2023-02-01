@@ -86,15 +86,14 @@ class InvoiceController extends ControllerBase {
             <p>Folio Fiscal UUID: $uuid<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
         } else {
           //Validar la fecha de la compra
-          $first_day = strtotime(date("Y-m-01"));
-          $last_day = strtotime(date("Y-m-t")."- 1 days");
+          $first_day = strtotime(date("Y-m-01"));//first day of the current month 
+          $last_day = strtotime(date("Y-m-t"));//last day of the current month 
           if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
             $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
             $user = $query_user->execute()->fetchAssoc();
             $url = Url::fromRoute('iss.user_data_form', ['user' => $this->currentUser()->id()]);
             if($user > 0) {
               $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
-              //$this->messenger()->addMessage($invoice);
               if($invoice->code ?? false && $invoice->code == '200') {
                 $pdf =  $invoice->cfdi->PDF;
                 $xml =  $invoice->cfdi->XML;
