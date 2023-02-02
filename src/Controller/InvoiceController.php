@@ -41,7 +41,7 @@ class InvoiceController extends ControllerBase {
     foreach($results as $data){
       $sale = json_decode($data->details);
       $url_invoice = Url::fromRoute('iss.invoice', ['id' => $data->id], []);
-      $url_receipt = Url::fromRoute('iss.receipt', ['id' => $data->id], []);
+      $url_receipt = Url::fromRoute('iss.receipt', ['id' => $data->id], ['attributes' => ['target' => '_blank']]);
       //print the data from table
       $rows[] = array(
         'name' => $sale->description,
@@ -132,12 +132,14 @@ class InvoiceController extends ControllerBase {
     $sales = $ppss_sales->execute()->fetchAssoc();
     $details = json_decode($sales['details']);
     $data = [
-      "user" => $sales["mail"],
+      "email" => $sales["mail"],
       "platform" => $sales["platform"],
-      "created" => date("d-m-Y",$sales["created"]),
+      "created" => date("d/m/Y",$sales["created"]),
       "product" => $details->description,
-      "total" => $details->plan->payment_definitions[0]->amount->value + $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
-      "details" => $details->plan->payment_definitions[0]
+      "total" => $details->plan->payment_definitions[0]->amount->value,
+      "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+      "details" => $details->plan->payment_definitions[0],
+      "user" => $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name
     ];
     return [
       '#theme' => 'receipt',

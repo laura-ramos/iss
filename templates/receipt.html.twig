@@ -1,12 +1,27 @@
 <div>
-  <div>Username: {{sale.user}}</div>
-  <div>Plataforma: {{sale.platform}}</div>
-  <div>Fecha: {{sale.created}}</div>
-  Detalles
+  <b>{{sale.user}}</b><br>
+  <div>{{sale.email}}</div>
+  <div>Fecha de la compra {{sale.created}}</div>
+  <hr>
+  <b>Detalles de la compra</b>
   <table>
+    <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Tipo de pago</th>
+          <th>IVA</th>
+          <th>Total</th>
+        </tr>
+      </thead>
     <tr>
       <td>{{sale.product}}</td>
-      <td>{{sale.total}}</td>
+      <td>{{sale.platform}}</td>
+      <td>$ {{sale.iva}}</td>
+      <td>$ {{sale.total}}</td>
+    </tr>
+    <tr>
+      <td colspan="3"></td>
+      <td>$ {{sale.iva + sale.total}}</td>
     </tr>
   </table>
   <button onclick="window.print();return false;" >Imprimir Recibo</button>
