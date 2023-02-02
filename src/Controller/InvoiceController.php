@@ -21,7 +21,7 @@ class InvoiceController extends ControllerBase {
   public function purchaseHistory() {
     //create table header
     $header_table = array(
-      'name' => $this->t('Name'),
+      'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
       'date' => $this->t('Date'),
@@ -49,8 +49,8 @@ class InvoiceController extends ControllerBase {
         'platform' => $data->platform,
         'date' => date('d-m-Y', $data->created),
         'status' => $data->status ? 'Activo' : 'Inactivo',
-        'receipt' => Link::fromTextAndUrl('Receipt', $url_receipt),
-        'invoice' => $data->p_general ? '' : Link::fromTextAndUrl('Invoice', $url_invoice)
+        'receipt' => Link::fromTextAndUrl($this->t('Receipt'), $url_receipt),
+        'invoice' => $data->p_general ? '' : Link::fromTextAndUrl($this->t('Invoice'), $url_invoice)
       );
     }
     //display data in site
@@ -59,6 +59,11 @@ class InvoiceController extends ControllerBase {
       '#header' => $header_table,
       '#rows' => $rows,
       '#empty' => 'No hay compras',
+      '#attributes' => [
+        'class' => [
+          'nvi-table-invoice',
+        ],
+      ]
     ];
     return $form;
   }
