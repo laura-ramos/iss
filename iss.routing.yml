@@ -33,3 +33,10 @@ iss.receipt:
     _title: 'Receipt'
   requirements:
     _user_is_logged_in: 'TRUE'
+iss.list:
+  path: '/admin/config/services/iss/list'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::listSales'
+    _title: 'Sales listing'
+  requirements:
+    _permission: 'administer iss'

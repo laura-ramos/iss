@@ -151,4 +151,54 @@ class InvoiceController extends ControllerBase {
       '#sale' => $data,
     ];
   }
+
+  //sales listing
+  public function listSales() {
+    $form['form'] = \Drupal::formBuilder()->getForm('Drupal\iss\Form\FilterTableForm');
+    $start_date = strtotime(\Drupal::request()->query->get('start_date') ?? date('Y-m-01'));
+    $end_date = strtotime(\Drupal::request()->query->get('end_date') ?? date('Y-m-t'));
+    //create table header
+    $header_table = array(
+      'name' => $this->t('Plan'),
+      'total' => $this->t('Total price'),
+      'platform' => $this->t('Payment type'),
+      'date' => $this->t('Date'),
+      'user' => $this->t('User'),
+      'invoice' => $this->t('Invoice'),
+      'type' => $this->t('Type'),
+    );
+    //select records from table ppss_sales
+    $query = \Drupal::database()->select('ppss_sales', 's');
+    $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
+    $query->leftJoin('iss_user_invoice', 'ui', 's.uid = ui.uid');
+    $query->condition('s.created', array($start_date, $end_date), 'BETWEEN');
+    $query->fields('s', ['id','uid','platform','details', 'created', 'status']);
+    $query->fields('i',['uuid','p_general']);
+    $query->fields('ui',['rfc', 'mail']);
+    $results = $query->execute()->fetchAll();
+
+    $rows = array();
+    foreach($results as $data){
+      $sale = json_decode($data->details);
+      //print the data from table
+      $rows[] = array(
+        'name' => $sale->description,
+        'total' => $sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        'platform' => $data->platform,
+        'date' => date('d-m-Y', $data->created),
+        'user' => $data->mail,
+        'invoice' => $data->uuid ? 'Facturado': 'En espera',
+        'type' => $data->p_general ? 'Público en general' : $data->rfc,
+      );
+    }
+    //display data in site
+    $form['table'] = [
+      '#type' => 'table',
+      '#header' => $header_table,
+      '#rows' => $rows,
+      '#empty' => 'No hay datos'
+    ];
+    return $form;
+  }
+
 }
