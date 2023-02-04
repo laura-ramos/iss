@@ -203,7 +203,7 @@ class IssApiService {
     $config =  \Drupal::config('iss.settings');
     $first_day = strtotime(date("Y-m-01"));//first day of the current month 
     $today = date("Y-m-d");
-    $last_day = strtotime(date("Y-m-t").$config->get('stamp_date'));//last day of the current month 
+    $last_day = strtotime(date("Y-m-t 23:45:00").$config->get('stamp_date'));//last day of the current month 
     if($today == date('Y-m-d', $last_day)) {
       //obtener ppss_sales que no han sido facturados
       $query = $this->database->select('ppss_sales', 's');
@@ -216,7 +216,6 @@ class IssApiService {
       $results = $query->execute()->fetchAll();
       foreach($results as $result) {
         if(!$result->uuid) {
-          $num += 1;//contador
           $invoice = $this->createInvoice(true, $result->id);
           if($invoice->code ?? false && $invoice->code == '200') {
             $num = $num + 1;

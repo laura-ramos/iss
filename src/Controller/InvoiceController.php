@@ -92,7 +92,7 @@ class InvoiceController extends ControllerBase {
         } else {
           //Validar la fecha de la compra
           $first_day = strtotime(date("Y-m-01"));//first day of the current month 
-          $last_day = strtotime(date("Y-m-t"));//last day of the current month 
+          $last_day = strtotime(date("Y-m-t 23:59:00"));//last day of the current month 
           if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
             $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
             $user = $query_user->execute()->fetchAssoc();
