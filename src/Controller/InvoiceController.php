@@ -108,11 +108,11 @@ class InvoiceController extends ControllerBase {
                 <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
               } else {
                 $this->messenger()->addError($invoice);
-                $message = "<b>Error al generar factura:</b> Asegúrate de contar con datos fiscales válidos <a href=".$url->toString().">Datos fiscales</a>";
+                $message = "<b>Error al generar factura:</b> Asegúrate de contar con datos fiscales válidos, favor de revisar <a href=".$url->toString().">aquí</a>";
               }
             } else {
               $this->messenger()->addError($this->t('Your billing information is missing'));
-              $message = "Favor de registrar tus datos fiscales en <a href=".$url->toString().">Datos fiscales</a>";
+              $message = "Favor de registrar tus <a href=".$url->toString().">datos fiscales aquí.</a>";
             }
           } else {
             $this->messenger()->addWarning('No puedes generar facturas de fechas anteriones, favor de comunicarte con el administrador');
