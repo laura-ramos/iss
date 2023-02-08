@@ -7,5 +7,9 @@ configure: iss.admin_settings_form
 
 dependencies:
   - drupal:block
+  - drupal:ppss
 
-version: 0.1
+version: '0.1'
+project: iss
+'interface translation project': iss
+'interface translation server pattern': 'modules/custom/iss/translations/iss.es.po'

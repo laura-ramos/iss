@@ -35,29 +35,27 @@ class ISSAdminSettingsForm extends ConfigFormBase {
 
     $form['iss_settings'] = [
       '#type' => 'details',
-      '#title' => $this->t('Iss settings'),
+      '#title' => $this->t('ISS settings'),
       '#open' => TRUE,
-      '#description' => $this->t('You need to first create a Account at @factura_digital',
-        [
-          '@factura_digital' => Link::fromTextAndUrl($this->t('Factura Digital'), Url::fromUri('https://app.facturadigital.com.mx/registro', [
-            'attributes' => [
-              'onclick' => "target='_blank'",
-            ],
-          ]))->toString(),
-        ]),
+      '#description' => $this->t('You need to first create a Account at @factura_digital',[
+        '@factura_digital' => Link::fromTextAndUrl('Factura Digital', Url::fromUri('https://app.facturadigital.com.mx/registro', [
+          'attributes' => [
+            'onclick' => "target='_blank'",
+          ],
+        ]))->toString(),
+      ]),
     ];
     $form['iss_settings']['api_endpoint'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $config->get('api_endpoint'),
-      '#title' => $this->t('Endpoint')
+      '#title' => 'Endpoint'
     ];
     $form['iss_settings']['api_key'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
       '#title' => $this->t('Api Key'),
       '#default_value' => $config->get('api_key'),
-      '#description' => $this->t('Copy the Api Key here.'),
     ];
 
     $form['iss_settings_invoice'] = [
@@ -69,27 +67,46 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $config->get('regimen_fiscal'),
-      '#title' => $this->t('Régimen Fiscal')
+      '#title' => 'Régimen Fiscal'
     ];
     $form['iss_settings_invoice']['lugar_expedicion'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $config->get('lugar_expedicion'),
-      '#title' => $this->t('Lugar de expedición')
+      '#title' => 'Lugar de expedición'
     ];
     $form['iss_settings_invoice']['serie'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $config->get('serie'),
-      '#title' => $this->t('Serie')
+      '#title' => 'Serie'
     ];
     $form['iss_settings_invoice']['folio'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
       '#default_value' => $config->get('folio'),
-      '#title' => $this->t('folio')
+      '#title' => 'Folio'
     ];
 
+    $form['iss_settings_cron'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Cron settings'),
+      '#open' => TRUE
+    ];
+    $form['iss_settings_cron']['num_rows'] = [
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#default_value' => $config->get('num_rows'),
+      '#title' => 'Número de registros',
+      "#description" => 'Número de registros a facturar cada que se ejecuta el cron.'
+    ];
+    $form['iss_settings_cron']['stamp_date'] = [
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#default_value' => $config->get('stamp_date'),
+      '#title' => 'Fecha para generar facturas',
+      "#description" => 'Número de días antes del final del mes para generar las facturas. Ejemplo: - 1 days, - 2 days, - 1 week',
+    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -106,6 +123,8 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       ->set('lugar_expedicion', $form_state->getValue('lugar_expedicion'))
       ->set('serie', $form_state->getValue('serie'))
       ->set('folio', $form_state->getValue('folio'))
+      ->set('num_rows', $form_state->getValue('num_rows'))
+      ->set('stamp_date', $form_state->getValue('stamp_date'))
       ->save();
     
     $this->messenger()->addMessage($this->t('The configuration options have been saved.'));

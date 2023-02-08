@@ -20,3 +20,7 @@ iss.settings:
     folio:
       type: string
       label: 'Folio'
+    num_rows:
+      type: string
+    stamp_date:
+      type: string

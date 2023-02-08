@@ -3,7 +3,11 @@
  * Implment hook_schema()
  */
 function iss_schema() {
-
+  // Create database table called 'iss_user_invoice' with the following colums:
+  // 1) id [serial], 2) uid [int], 3) name [varchar], 4)rfc [varchar],
+  // 5) postal_code [varchar], 6) regimen_fiscal [int], 7) cfdi [varchar],
+  // 8) mail [varchar], 9) address [int], 10) number_ext [varchar], 11) number_int [varchar],
+  // 12) suburb [varchar], 13) city [varchar], 14) state [varchar]
   $schema['iss_user_invoice'] = [
     'description' => 'User billing information.',
     'fields' => [
@@ -47,7 +51,7 @@ function iss_schema() {
         'type' => 'varchar',
         'not null' => TRUE,
         'length' => 128,
-        'description' => 'CFDI.',
+        'description' => 'uso de CFDI.',
       ],
       'mail' => [
         'type' => 'varchar',
@@ -95,6 +99,10 @@ function iss_schema() {
     'primary key' => ['id'],
   ];
 
+  // Create database table called 'iss_invoices' with the following colums:
+  // 1) id [serial], 2) sid [int], 3) folio [int], 4)uuid [varchar],
+  // 5) pdf [varchar], 6) xml [int], 7) created [varchar],
+  // 8) cancelled [varchar], 9) p_general [int]
   $schema['iss_invoices'] = [
     'description' => 'Details of invoices generated',
     'fields' => [
@@ -146,6 +154,12 @@ function iss_schema() {
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
+      ],
+      'p_general' => [
+        'description' => 'Type invoice',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
       ],
     ],
     'primary key' => ['id']

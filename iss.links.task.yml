@@ -1,10 +1,19 @@
+iss.settings:
+  title: 'Settings'
+  route_name: iss.admin_settings_form
+  base_route: iss.admin_settings_form
+iss.list:
+  title: 'Sales listing'
+  route_name: iss.list
+  base_route: iss.admin_settings_form
+  weight: 11  
 iss.user_data_form:
   route_name: iss.user_data_form
   base_route: entity.user.canonical
-  title: 'Billing information'
+  title: 'Billing'
   weight: 4
 iss.purchase_history:
   route_name: iss.purchase_history
   base_route: entity.user.canonical
-  title: 'Purchase history'
+  title: 'Purchases'
   weight: 4

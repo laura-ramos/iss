@@ -130,7 +130,6 @@ class IssApiService {
       $datosFactura['Impuestos']['Traslados'][0]['TipoFactor'] = 'Tasa'; //Tasa, Cuota, Exento
       $datosFactura['Impuestos']['Traslados'][0]['TasaOCuota'] = '0.160000';
       $datosFactura['Impuestos']['Traslados'][0]['Importe'] = $impuesto;
-//return $datosFactura;
       //conectar con el servicio
       $request = $client->post($config->get('api_endpoint').'/api/v5/invoice/create', [
         'headers' => ['X-Api-Key' => $config->get('api_key')],
@@ -148,6 +147,7 @@ class IssApiService {
           'created' => $data->cfdi->FechaTimbrado,
           'pdf' => $data->cfdi->PDF,
           'xml' => $data->cfdi->XML,
+          'p_general' => $p_general ? 1 : 0,
         ])->execute();
         if(!$p_general){
           $this->sendInvoice($data->cfdi->UUID, $user['mail']);
@@ -157,8 +157,14 @@ class IssApiService {
         return $data->message ?? 'Ha ocurrido un error';
       }
     } catch (RequestException $e) {
-      $response = json_decode($e->getResponse()->getBody()->getContents());
-      return $response->message ?? 'Error al generar factura';
+      if ($e->hasResponse()) {
+        $exception = $e->getResponse()->getBody();
+        $exception = json_decode($exception);
+        return $exception->message ?? 'Error al generar factura';
+      } else {
+        \Drupal::logger('ISS')->error($e->getMessage());
+        return 'Error al generar factura';
+      }
     }
   }
 
@@ -181,42 +187,46 @@ class IssApiService {
       $data  = json_decode($response_body->getContents());
       return $data->message;
     } catch (RequestException $e) {
-      $response = json_decode($e->getResponse()->getBody()->getContents());
-      return $response->message ?? 'Error al enviar factura';
+      if ($e->hasResponse()) {
+        $exception = $e->getResponse()->getBody();
+        $exception = json_decode($exception);
+        return $exception->message ?? 'Error al enviar factura';
+      } else {
+        \Drupal::logger('ISS')->error($e->getMessage());
+        return 'Error al enviar factura';
+      }
     }
   }
 
+  //funcion para generar facturas a público en general al final de mes
   public function globalInvoice() {
-    $first_day = strtotime(date("Y-m-01"));
+    $config =  \Drupal::config('iss.settings');
+    $first_day = strtotime(date("Y-m-01"));//first day of the current month 
     $today = date("Y-m-d");
-    $last_day = strtotime(date("Y-m-t")."- 1 days");
-    //if($today == date('Y-m-d', $last_day)) {
-    if($today == '2022-12-18') {
+    $last_day = strtotime(date("Y-m-t 23:45:00").$config->get('stamp_date'));//last day of the current month 
+    if($today == date('Y-m-d', $last_day)) {
       //obtener ppss_sales que no han sido facturados
       $query = $this->database->select('ppss_sales', 's');
       $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
       $query->condition('s.created', array($first_day, $last_day), 'BETWEEN');
-      //$query->condition('s.id', 5, '=');
       $query->fields('s', ['id','uid','mail']);
       $query->fields('i',['uuid']);
-      $query->range(0, 50);
-      $index = 0;
+      $query->range(0, $config->get('num_rows'));
+      $num = 0;
       $results = $query->execute()->fetchAll();
-      //return $results;
       foreach($results as $result) {
         if(!$result->uuid) {
-          $index = $index + 1;
-          //generar facturas
           $invoice = $this->createInvoice(true, $result->id);
           if($invoice->code ?? false && $invoice->code == '200') {
-            $index = $index + 1;
+            $num = $num + 1;
           } else {
             \Drupal::logger('ISS')->error('Error al generar factura de la venta '.$result->id.'-'.$invoice);
           }
-         //\Drupal::logger('ISS')->error('Generar facturas de publico en general'); 
         }
       }
-      \Drupal::logger('ISS')->info('Se generaron '.$index.' facturas');
+      if($num > 0) {
+        \Drupal::logger('ISS')->info('Se generaron '.$num.' facturas publico en general');
+      }
     }
   }
 }

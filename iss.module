@@ -10,3 +10,12 @@ function iss_theme($existing, $type, $theme, $path) {
       ]
     ];
 }
+
+/**
+ * Implements hook_cron().
+ */
+  function iss_cron(){
+    //generar factura para publico en general
+    $invoice = \Drupal::service('iss.api_service');
+    $invoice->globalInvoice();
+  }

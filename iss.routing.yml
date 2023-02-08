@@ -8,7 +8,7 @@ iss.admin_settings_form:
 iss.user_data_form:
   path: '/user/{user}/bill_data'
   defaults:
-    _title: 'Billing information'
+    _title: 'Billing'
     _form: '\Drupal\iss\Form\ISSGetInvoiceDataForm'
   requirements:
     _user_is_logged_in: 'TRUE'
@@ -16,14 +16,14 @@ iss.purchase_history:
   path: '/user/{user}/purchases'
   defaults:
     _controller: '\Drupal\iss\Controller\InvoiceController::purchaseHistory'
-    _title: 'Purchase history'
+    _title: 'Purchases'
   requirements:
     _user_is_logged_in: 'TRUE'
 iss.invoice:
   path: '/user/invoice/{id}'
   defaults:
     _controller: '\Drupal\iss\Controller\InvoiceController::createInvoice'
-    _title: 'Invoice'
+    _title: 'Generate invoice'
   requirements:
     _user_is_logged_in: 'TRUE'
 iss.receipt:
@@ -33,3 +33,10 @@ iss.receipt:
     _title: 'Receipt'
   requirements:
     _user_is_logged_in: 'TRUE'
+iss.list:
+  path: '/admin/config/services/iss/list'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::listSales'
+    _title: 'Sales listing'
+  requirements:
+    _permission: 'administer iss'
