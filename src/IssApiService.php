@@ -75,7 +75,7 @@ class IssApiService {
       $datosFactura['Serie'] = $config->get('serie');
       $datosFactura['Folio'] = $folio['folio'] ? $folio['folio'] + 1 : $config->get('folio');
       $datosFactura['Fecha'] = 'AUTO';
-      $datosFactura['FormaPago'] = "06";//definir bien
+      $datosFactura['FormaPago'] = $config->get('c_pago');
       $datosFactura['CondicionesDePago'] = "";
       $datosFactura['SubTotal'] = $base;
       $datosFactura['Descuento'] = null;

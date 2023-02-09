@@ -87,6 +87,37 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('folio'),
       '#title' => 'Folio'
     ];
+    $form['iss_settings_invoice']['c_pago'] = [
+      '#type' => 'select',
+      '#title' => 'Forma de pago',
+      '#required' => TRUE,
+      '#options' => [
+        '01' => '01 Efectivo',
+        '02' => '02 Cheque nominativo',
+        '03' => '03 Transferencia electrónica de fondos',
+        '04' => '04 Tarjeta de crédito',
+        '05' => '05 Monedero electrónico',
+        '06' => '06 Dinero electrónico',
+        '08' => '08 Vales de despensa',
+        '12' => '12 Dación en pago',
+        '13' => '13 Pago por subrogación',
+        '14' => '15 Pago por consignación',
+        '15' => '15 Condonación',
+        '17' => '17 Compensación',
+        '23' => '23 Novación',
+        '24' => '24 Confusión',
+        '25' => '14 Remisión de deuda',
+        '26' => '16 Prescripción o caducidad',
+        '27' => '17 A satisfacción del acreedor',
+        '28' => '18 Tarjeta de débito',
+        '29' => '19 Tarjeta de servicios',
+        '30' => '30 Aplicación de anticipos',
+        '31' => '31 Intermediario pagos',
+        '99' => '99 Por definir',
+      ],
+      '#default_value' => $config->get('c_pago'),
+      "#description" => 'Forma en la que se efectua el pago',
+    ];
 
     $form['iss_settings_cron'] = [
       '#type' => 'details',
@@ -125,6 +156,7 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       ->set('folio', $form_state->getValue('folio'))
       ->set('num_rows', $form_state->getValue('num_rows'))
       ->set('stamp_date', $form_state->getValue('stamp_date'))
+      ->set('c_pago', $form_state->getValue('c_pago'))
       ->save();
     
     $this->messenger()->addMessage($this->t('The configuration options have been saved.'));

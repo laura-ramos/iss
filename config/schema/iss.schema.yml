@@ -24,3 +24,5 @@ iss.settings:
       type: string
     stamp_date:
       type: string
+    c_pago:
+      type: string
