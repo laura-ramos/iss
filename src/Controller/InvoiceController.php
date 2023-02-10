@@ -45,7 +45,7 @@ class InvoiceController extends ControllerBase {
       //print the data from table
       $rows[] = array(
         'name' => $sale->description,
-        'total' => $sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
         'date' => date('d-m-Y', $data->created),
         'status' => $data->status ? 'Activo' : 'Inactivo',
@@ -183,7 +183,7 @@ class InvoiceController extends ControllerBase {
       //print the data from table
       $rows[] = array(
         'name' => $sale->description,
-        'total' => $sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
         'date' => date('d-m-Y', $data->created),
         'user' => $data->mail,

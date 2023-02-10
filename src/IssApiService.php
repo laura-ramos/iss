@@ -98,7 +98,7 @@ class IssApiService {
         $datosFactura["Receptor"]["DomicilioFiscalReceptor"] = $config->get('lugar_expedicion');//debe ser el mismo que LugarExpedición
         $datosFactura["Receptor"]["RegimenFiscalReceptor"] = '616';//sin obligaciones fiscales
 
-        $datosFactura["InformacionGlobal"]["Periodicidad"] = '01';//01-Diaria, 02-Semanal, 03-Quincenal, 04-Mensual o 05-Bimestral
+        $datosFactura["InformacionGlobal"]["Periodicidad"] = '04';//01-Diaria, 02-Semanal, 03-Quincenal, 04-Mensual o 05-Bimestral
         $datosFactura["InformacionGlobal"]["Meses"] = date('m');
         $datosFactura["InformacionGlobal"]["Año"] = date('Y');
 
@@ -115,9 +115,9 @@ class IssApiService {
         $datosFactura["Receptor"]["NoExt"] = $user['number_ext'];
         $datosFactura["Receptor"]["NoInt"] = $user['number_int'];
         $datosFactura["Receptor"]["Colonia"] = $user['suburb'];
-        //$datosFactura["Receptor"]["Loacalidad"] = null;
+        $datosFactura["Receptor"]["Loacalidad"] = $user['city'];;
         //$datosFactura["Receptor"]["Referencia"] = null;
-        $datosFactura["Receptor"]["Municipio"] = $user['city'];
+        $datosFactura["Receptor"]["Municipio"] = $user['town'];
         $datosFactura["Receptor"]["Estado"] = $user['state'];
         $datosFactura["Receptor"]["Pais"] = 'MEXICO';
         $datosFactura["Receptor"]["CodigoPostal"] = $user['postal_code'];

@@ -66,13 +66,6 @@ class ISSGetInvoiceDataForm extends FormBase {
       '#default_value' => $currentUser['rfc'] ?? '',
       '#description' => 'Deberá señanal correctamente cada letra o número que conforma su RFC tal cual aparece en su constancia de situación fiscal'
     ];
-    $form['postal_code'] = [
-      '#type' => 'textfield',
-      '#title' => 'Código Postal',
-      '#required' => true,
-      '#default_value' => $currentUser['postal_code'] ?? '',
-      '#description' => 'Código postal de su domicilio fiscal aparece en la constancia de situación fiscal'
-    ];
     $form['regimen_fiscal'] = [
       '#type' => 'select',
       '#title' => 'Régimen Fiscal',
@@ -142,20 +135,26 @@ class ISSGetInvoiceDataForm extends FormBase {
     ];
     $form['address'] = [
       '#type' => 'details',
-      '#title' => 'Dirección',
-      '#open' => TRUE,
-      '#description' => "Los siguientes campos son opcionales"
+      '#title' => 'Datos del domicilio registrado',
+      '#open' => TRUE
+    ];
+    $form['address']['postal_code'] = [
+      '#type' => 'textfield',
+      '#title' => 'Código Postal',
+      '#required' => true,
+      '#default_value' => $currentUser['postal_code'] ?? '',
+      '#description' => 'Código postal de su domicilio fiscal aparece en la constancia de situación fiscal'
     ];
     $form['address']['address'] = [
       '#type' => 'textfield',
-      '#title' => 'Calle',
-      '#required' => FALSE,
+      '#title' => 'Nombre de la Calle',
+      '#required' => TRUE,
       '#default_value' => $currentUser['address'] ?? '',
     ];
     $form['address']['number_ext'] = [
       '#type' => 'textfield',
       '#title' => 'Número exterior',
-      '#required' => FALSE,
+      '#required' => TRUE,
       '#default_value' => $currentUser['number_ext'] ?? '',
     ];
     $form['address']['number_int'] = [
@@ -166,20 +165,60 @@ class ISSGetInvoiceDataForm extends FormBase {
     ];
     $form['address']['suburb'] = [
       '#type' => 'textfield',
-      '#title' => 'Colonia',
+      '#title' => 'Nombre de la Colonia',
       '#required' => FALSE,
       '#default_value' => $currentUser['suburb'] ?? '',
     ];
     $form['address']['city'] = [
       '#type' => 'textfield',
-      '#title' => 'Municipio',
-      '#required' => FALSE,
+      '#title' => 'Nombre de la Localidad o ciudad',
+      '#required' => TRUE,
       '#default_value' => $currentUser['city'] ?? '',
     ];
-    $form['address']['state'] = [
+    $form['address']['town'] = [
       '#type' => 'textfield',
-      '#title' => 'Estado',
-      '#required' => FALSE,
+      '#title' => 'Nombre del Municipio',
+      '#required' => TRUE,
+      '#default_value' => $currentUser['town'] ?? '',
+    ];
+    $form['address']['state'] = [
+      '#type' => 'select',
+      '#title' => 'Nombre de la Entidad Federativa',
+      '#required' => TRUE,
+      '#options' => [
+        'AGUASCALIENTES' => 'AGUASCALIENTES',
+        'BAJA CALIFORNIA' => 'BAJA CALIFORNIA',
+        'BAJA CALIFORNIA SUR' => 'BAJA CALIFORNIA SUR',
+        'CAMPECHE' => 'CAMPECHE',
+        'COAHUILA' => 'COAHUILA',
+        'COLIMA' => 'COLIMA',
+        'CHIAPAS' => 'CHIAPAS',
+        'CHIHUAHUA' => 'CHIHUAHUA',
+        'CIUDAD DE MEXICO' => 'CIUDAD DE MEXICO',
+        'DURANGO' => 'DURANGO',
+        'GUANAJUATO' => 'GUANAJUATO',
+        'GUERRERO' => 'GUERRERO',
+        'HIDALGO' => 'HIDALGO',
+        'JALISCO' => 'JALISCO',
+        'MEXICO' => 'MEXICO',
+        'MICHOACAN' => 'MICHOACAN',
+        'MORELOS' => 'MORELOS',
+        'NAYARIT' => 'NAYARIT',
+        'NUEVO LEON' => 'NUEVO LEON',
+        'OAXACA' => 'OAXACA',
+        'PUEBLA' => 'PUEBLA',
+        'QUERETARO' => 'QUERETARO',
+        'QUINTANA ROO' => 'QUINTANA ROO',
+        'SAN LUIS POTOSI' => 'SAN LUIS POTOSI',
+        'SINALOA' => 'SINALOA',
+        'SONORA' => 'SONORA',
+        'TABASCO' => 'TABASCO',
+        'TAMAULIPAS' => 'TAMAULIPAS',
+        'TLAXCALA' => 'TLAXCALA',
+        'VERACRUZ' => 'VERACRUZ',
+        'YUCATAN' => 'YUCATAN',
+        'ZACATECAS' => 'ZACATECAS',
+      ],
       '#default_value' => $currentUser['state'] ?? '',
     ];
     $form['nota'] = [
@@ -211,6 +250,7 @@ class ISSGetInvoiceDataForm extends FormBase {
     $number_int = $form_state->getValue('number_int');
     $suburb = $form_state->getValue('suburb');
     $city = $form_state->getValue('city');
+    $town = $form_state->getValue('town');
     $state = $form_state->getValue('state');
 
     $query = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $id_user)->fields('i');
@@ -230,6 +270,7 @@ class ISSGetInvoiceDataForm extends FormBase {
         'number_int' => $number_int,
         'suburb' => $suburb,
         'city' => $city,
+        'town' => $town,
         'state' => $state,
       ])->condition('uid', $id_user, '=')->execute();
 
@@ -250,6 +291,7 @@ class ISSGetInvoiceDataForm extends FormBase {
         'number_int' => $number_int,
         'suburb' => $suburb,
         'city' => $city,
+        'town' => $town,
         'state' => $state,
       ])->execute();
 

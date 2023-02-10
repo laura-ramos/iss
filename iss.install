@@ -7,7 +7,7 @@ function iss_schema() {
   // 1) id [serial], 2) uid [int], 3) name [varchar], 4)rfc [varchar],
   // 5) postal_code [varchar], 6) regimen_fiscal [int], 7) cfdi [varchar],
   // 8) mail [varchar], 9) address [int], 10) number_ext [varchar], 11) number_int [varchar],
-  // 12) suburb [varchar], 13) city [varchar], 14) state [varchar]
+  // 12) suburb [varchar], 13) city [varchar], 14) town [varchar], 15) state [varchar]
   $schema['iss_user_invoice'] = [
     'description' => 'User billing information.',
     'fields' => [
@@ -57,13 +57,13 @@ function iss_schema() {
         'type' => 'varchar',
         'not null' => TRUE,
         'length' => 100,
-        'description' => 'e-mail.',
+        'description' => 'Users email to send the invoice.',
       ],
       'address' => [
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'ADDRESS.',
+        'description' => 'Name of the street.',
       ],
       'number_ext' => [
         'type' => 'varchar',
@@ -81,19 +81,25 @@ function iss_schema() {
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'Suburb.',
+        'description' => 'Suburb Name.',
       ],
       'city' => [
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'City.',
+        'description' => 'City name.',
+      ],
+      'town' => [
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => 100,
+        'description' => 'Town Name.',
       ],
       'state' => [
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'State.',
+        'description' => 'State Name.',
       ]
     ],
     'primary key' => ['id'],
