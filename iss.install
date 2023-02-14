@@ -1,4 +1,5 @@
 <?php
+use Drupal\Core\Database\Database;
 /**
  * Implment hook_schema()
  */
@@ -57,13 +58,13 @@ function iss_schema() {
         'type' => 'varchar',
         'not null' => TRUE,
         'length' => 100,
-        'description' => 'e-mail.',
+        'description' => 'Users email to send the invoice.',
       ],
       'address' => [
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'ADDRESS.',
+        'description' => 'Name of the street.',
       ],
       'number_ext' => [
         'type' => 'varchar',
@@ -81,19 +82,19 @@ function iss_schema() {
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'Suburb.',
+        'description' => 'Suburb Name.',
       ],
       'city' => [
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'City.',
+        'description' => 'City name.',
       ],
       'state' => [
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => 100,
-        'description' => 'State.',
+        'description' => 'State Name.',
       ]
     ],
     'primary key' => ['id'],
@@ -166,4 +167,19 @@ function iss_schema() {
   ];
   return $schema;
 }
-  
+
+/**
+ * Implements hook_update_9101().
+ * Add new field in iss_user_invoice table.
+ */
+function iss_update_9101() {
+  $field = [
+    'type' => 'varchar',
+    'length' => 100,
+    'not null' => FALSE,
+    'description' => 'Town Name.',
+  ]; 
+  $schema = Database::getConnection()->schema();
+  $schema->addField('iss_user_invoice', 'town', $field);
+
+}
