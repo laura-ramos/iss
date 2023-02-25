@@ -40,3 +40,10 @@ iss.list:
     _title: 'Sales listing'
   requirements:
     _permission: 'administer iss'
+iss.show_purchase:
+  path: '/user/show_purchase/{id}'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::showPurchase'
+    _title: 'Details'
+  requirements:
+    _user_is_logged_in: 'TRUE'

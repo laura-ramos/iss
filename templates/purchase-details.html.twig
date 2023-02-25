@@ -1,0 +1,36 @@
+<div style="display: flex;justify-content: center;">
+  <div>
+    <div style="text-align: center;">
+      <h2>{{sale.product}}<h2>
+      <h3>${{(sale.iva + sale.total)|number_format(2, '.', ',') }}</h3>
+      <p>El último pago se realizó el: {{sale.last_pay|date("m/d/Y")}}</p>
+    <div>
+    <hr>
+    <h4>Detalles de la compra</h4>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Estado</p> <div>{{sale.status}} {{sale.cancel}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Forma de pago</p> <div>{{sale.platform}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Los pagos se realizarán cada</p> <div>{{sale.frequency}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Fecha de inicio</p> <div>{{sale.created}}</div>
+    </div>
+    <hr>
+    <h4>Detalles de facturación</h4>
+    <div>
+    {% for payment in sale.payments %}
+      <div>{{ payment.created|date("m/d/Y") }} {{ sale.product }} - ${{ payment.total|number_format(2, '.', ',') }} 
+      <a href="/user/receipt/{{payment.id}}" target='_blank'>Receipt</a>
+      <a href="/user/invoice/{{payment.id}}">Invoice</a>
+      </div>
+    {% endfor %}
+    </div>
+    <br>
+    {{sale.prueba}}
+  </div>
+</div>
+   
