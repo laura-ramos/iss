@@ -31,10 +31,8 @@ class InvoiceController extends ControllerBase {
     );
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
-    $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
     $query->condition('uid', $user_id);
     $query->fields('s', ['id','uid','mail','platform','details', 'created', 'status', 'id_subscription']);
-    $query->fields('i',['uuid','p_general']);
     $results = $query->execute()->fetchAll();
 
     $rows = array();
@@ -132,8 +130,13 @@ class InvoiceController extends ControllerBase {
   }
 
   public function receipt($id){
-    $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
-    $sales = $ppss_sales->execute()->fetchAssoc();
+    $query = \Drupal::database()->select('ppss_sales_details', 'sd');
+    $query->join('ppss_sales', 's', 's.id = sd.sid');
+    $query->condition('sd.id', $id);
+    $query->fields('sd', ['id','created']);
+    $query->fields('s', ['created', 'details', 'mail', 'platform']);
+    $sales = $query->execute()->fetchAssoc();
+
     $details = json_decode($sales['details']);
     $data = [
       "email" => $sales["mail"],

@@ -23,7 +23,7 @@
     <h4>Detalles de facturación</h4>
     <div>
     {% for payment in sale.payments %}
-      <div>{{ payment.created|date("m/d/Y") }} {{ sale.product }} - ${{ payment.total|number_format(2, '.', ',') }} 
+      <div>{{ payment.created|date("d/m/Y") }} {{ sale.product }} - ${{ payment.total|number_format(2, '.', ',') }} 
       <a href="/user/receipt/{{payment.id}}" target='_blank'>Receipt</a>
       <a href="/user/invoice/{{payment.id}}">Invoice</a>
       </div>
