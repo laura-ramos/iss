@@ -138,6 +138,13 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       '#title' => 'Fecha para generar facturas',
       "#description" => 'Número de días antes del final del mes para generar las facturas. Ejemplo: - 1 days, - 2 days, - 1 week',
     ];
+    $form['iss_settings_cron']['time'] = [
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#default_value' => $config->get('time'),
+      '#title' => 'Hora',
+      "#description" => 'Proporcione una hora predeterminada en formato 12:00:00 que se usará para generar la Facturación a Público en General',
+    ];
 
     return parent::buildForm($form, $form_state);
   }
@@ -157,6 +164,7 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       ->set('num_rows', $form_state->getValue('num_rows'))
       ->set('stamp_date', $form_state->getValue('stamp_date'))
       ->set('c_pago', $form_state->getValue('c_pago'))
+      ->set('time', $form_state->getValue('time'))
       ->save();
     
     $this->messenger()->addMessage($this->t('The configuration options have been saved.'));
