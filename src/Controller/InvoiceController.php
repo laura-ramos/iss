@@ -53,7 +53,7 @@ class InvoiceController extends ControllerBase {
         'date' => date('d-m-Y', $data->created),
         'status' => $data->status ? 'Activo' : 'Inactivo',
         'receipt' => Link::fromTextAndUrl($this->t('Receipt'), $url_receipt),
-        'invoice' => $data->p_general ? '' : Link::fromTextAndUrl($this->t('Invoice'), $url_invoice)
+        'invoice' => $data->p_general ? 'Público en General' : Link::fromTextAndUrl($data->uuid ? 'Consultar Factura' : 'Emitir Factura', $url_invoice)
       );
     }
     //display data in site
