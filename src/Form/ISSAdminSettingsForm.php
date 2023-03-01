@@ -143,7 +143,7 @@ class ISSAdminSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#default_value' => $config->get('time'),
       '#title' => 'Hora',
-      "#description" => 'Proporcione una hora predeterminada en formato 12:00:00 que se usará para generar la Facturación a Público en General',
+      "#description" => 'Proporcione una hora predeterminada en formato H:i:s (ej. 23:00:00) que se usará para generar la Facturación a Público en General',
     ];
 
     return parent::buildForm($form, $form_state);

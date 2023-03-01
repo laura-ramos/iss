@@ -19,8 +19,10 @@ class InvoiceController extends ControllerBase {
    *   Return purchase history by user.
    */
   public function purchaseHistory() {
+    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? \Drupal::routeMatch()->getParameter('user') : $this->currentUser()->id();
     //create table header
     $header_table = array(
+      'folio' => $this->t('Folio'),
       'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -32,7 +34,7 @@ class InvoiceController extends ControllerBase {
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
     $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
-    $query->condition('uid', $this->currentUser()->id());
+    $query->condition('uid', $user_id);
     $query->fields('s', ['id','uid','mail','platform','details', 'created', 'status']);
     $query->fields('i',['uuid','p_general']);
     $results = $query->execute()->fetchAll();
@@ -41,9 +43,10 @@ class InvoiceController extends ControllerBase {
     foreach($results as $data){
       $sale = json_decode($data->details);
       $url_invoice = Url::fromRoute('iss.invoice', ['id' => $data->id], []);
-      $url_receipt = Url::fromRoute('iss.receipt', ['id' => $data->id], ['attributes' => ['target' => '_blank']]);
+      $url_receipt = Url::fromRoute('iss.receipt', ['user' => $user_id, 'id' => $data->id], ['attributes' => ['target' => '_blank']]);
       //print the data from table
       $rows[] = array(
+        'folio' => $data->id,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
@@ -133,23 +136,32 @@ class InvoiceController extends ControllerBase {
   }
 
   public function receipt($id){
-    $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
+    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? \Drupal::routeMatch()->getParameter('user') : $this->currentUser()->id();
+    $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $user_id)->fields('s');
     $sales = $ppss_sales->execute()->fetchAssoc();
-    $details = json_decode($sales['details']);
-    $data = [
-      "email" => $sales["mail"],
-      "platform" => $sales["platform"],
-      "created" => date("d/m/Y",$sales["created"]),
-      "product" => $details->description,
-      "total" => $details->plan->payment_definitions[0]->amount->value,
-      "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
-      "details" => $details->plan->payment_definitions[0],
-      "user" => $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name
-    ];
-    return [
-      '#theme' => 'receipt',
-      '#sale' => $data,
-    ];
+    if($sales > 0) {
+      $details = json_decode($sales['details']);
+      $data = [
+        "folio" => $sales['id'],
+        "email" => $sales["mail"],
+        "platform" => $sales["platform"],
+        "created" => date("d/m/Y",$sales["created"]),
+        "product" => $details->description,
+        "total" => $details->plan->payment_definitions[0]->amount->value,
+        "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        "details" => $details->plan->payment_definitions[0],
+        "user" => $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name
+      ];
+      return [
+        '#theme' => 'receipt',
+        '#sale' => $data,
+      ];
+    } else {
+      return [
+        '#type' => 'markup',
+        '#markup' => "No hay datos para mostrar"
+      ];
+    }
   }
 
   //sales listing
@@ -159,6 +171,7 @@ class InvoiceController extends ControllerBase {
     $end_date = strtotime(\Drupal::request()->query->get('end_date') ?? date('Y-m-t'));
     //create table header
     $header_table = array(
+      'folio' => $this->t('Folio'),
       'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -175,6 +188,7 @@ class InvoiceController extends ControllerBase {
     $query->fields('s', ['id','uid','platform','details', 'created', 'status']);
     $query->fields('i',['uuid','p_general']);
     $query->fields('ui',['rfc', 'mail']);
+    $query->orderBy('id', 'ASC');
     $results = $query->execute()->fetchAll();
 
     $rows = array();
@@ -182,6 +196,7 @@ class InvoiceController extends ControllerBase {
       $sale = json_decode($data->details);
       //print the data from table
       $rows[] = array(
+        'folio' => $data->id,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
