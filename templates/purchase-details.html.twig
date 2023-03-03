@@ -1,0 +1,46 @@
+<div style="display: flex;justify-content: center;">
+  <div>
+    <div style="text-align: center;">
+      <h2>{{sale.product}}<h2>
+      <h3>${{(sale.iva + sale.total)|number_format(2, '.', ',') }}</h3>
+      <p>El último pago se realizó el: {{sale.last_pay|date("d/m/Y")}}</p>
+    <div>
+    <hr>
+    <h4>Detalles de la compra</h4>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Estado</p> <div>{{sale.status}} {{sale.cancel}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Forma de pago</p> <div>{{sale.platform}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Los pagos se realizarán cada</p> <div>{{sale.frequency}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Fecha de inicio</p> <div>{{sale.created}}</div>
+    </div>
+    {% if sale.expire %}
+    <div style="display: flex; justify-content: space-between;">
+      <p>Fecha de finalización</p> <div>{{sale.expire|date("d/m/Y")}}</div>
+    </div>
+    {% endif %}
+    <hr>
+    <h4>Detalles de facturación</h4>
+    <div>
+      <table>
+        {% for payment in sale.payments %}
+        <tr>
+          <td>{{ payment.created|date("d/m/Y") }} </td>
+          <td>{{ sale.product }} </td>
+          <td>- ${{ payment.total|number_format(2, '.', ',') }} </td>
+          <td><a href="/user/receipt/{{payment.id}}" target='_blank'>Receipt</a></td>
+          <td><a href="/user/invoice/{{payment.id}}">Invoice</a></td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <br>
+    {{sale.prueba}}
+  </div>
+</div>
+   
