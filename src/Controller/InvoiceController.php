@@ -38,7 +38,7 @@ class InvoiceController extends ControllerBase {
     $rows = array();
     foreach($results as $data){
       $sale = json_decode($data->details);
-      $details = Url::fromRoute('iss.show_purchase', ['id' => $data->id], []);
+      $details = Url::fromRoute('iss.show_purchase', ['user' => $user_id, 'id' => $data->id], []);
 
       //print the data from table
       $rows[] = array(
@@ -208,34 +208,47 @@ class InvoiceController extends ControllerBase {
    * @param $id
    *   Show puschase details by id sales.
    */
-  public function showPurchase($id) {
+  public function showPurchase($user, $id) {
+    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? $user : $this->currentUser()->id();
     $ppss_sales = \Drupal::database()->select('ppss_sales', 's')
-    ->condition('id', $id)->condition('uid', $this->currentUser()->id())
-    ->fields('s', ['id','uid','mail','platform','details', 'created', 'status', 'id_subscription', 'frequency']);;
+    ->condition('id', $id)->condition('uid', $user_id)
+    ->fields('s', ['id','uid','mail','platform','details', 'created', 'status', 'id_subscription', 'frequency', 'expire']);;
     $sales = $ppss_sales->execute()->fetchAssoc();
-    $details = json_decode($sales['details']);
-    $pp = \Drupal::database()->select('ppss_sales_details', 's')->condition('sid', $sales['id'])->fields('s')->orderBy('created', 'DESC');;
-    $payments = $pp->execute()->fetchAll();
-    $url_cancel = Url::fromRoute('ppss.cancel_subscription', ['id' => $sales['id_subscription']], []);
-    
-    $data = [
-      "id" => $sales["id"],
-      "email" => $sales["mail"],
-      "status" => $sales["status"] ? 'Activo' : 'Inactivo',
-      "platform" => $sales["platform"],
-      "created" => date("d/m/Y",$sales["created"]),
-      "frequency" => $sales["frequency"],
-      "product" => $details->description,
-      "total" => $details->plan->payment_definitions[0]->amount->value,
-      "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
-      'payments' => $payments,
-      'cancel' => $sales["status"] ? Link::fromTextAndUrl($this->t('Cancel'), $url_cancel) : '',
-      'last_pay' => $payments[0]->created
-    ];
-    return [
-      '#theme' => 'purchase-details',
-      '#sale' => $data,
-    ];
+    //if exist sale
+    if($sales) {
+      $details = json_decode($sales['details']);//get details sale
+      //get recurring payments
+      $payments_query = \Drupal::database()->select('ppss_sales_details', 's')->condition('sid', $sales['id'])->fields('s')->orderBy('created', 'DESC');;
+      $payments = $payments_query->execute()->fetchAll();
+      //build cancellation url
+      $url_cancel = Url::fromRoute('ppss.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
+
+      $data = [
+        "id" => $sales["id"],
+        "email" => $sales["mail"],
+        "status" => $sales["status"] ? 'Activo' : 'Inactivo',
+        "platform" => $sales["platform"],
+        "created" => date("d/m/Y",$sales["created"]),
+        "frequency" => $sales["frequency"],
+        "product" => $details->description,
+        "total" => $details->plan->payment_definitions[0]->amount->value,
+        "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        'payments' => $payments,
+        'cancel' => $sales["status"] && $sales["expire"] == null ? Link::fromTextAndUrl($this->t('Cancel'), $url_cancel) : '',
+        'last_pay' => $payments[0]->created,
+        'expire' => $sales["expire"]
+      ];
+      //show data in template
+      return [
+        '#theme' => 'purchase-details',
+        '#sale' => $data,
+      ];
+    } else {
+      return [
+        '#type' => 'markup',
+        '#markup' => "No hay datos que mostrar"
+      ];
+    }
   }
 
 }
