@@ -64,7 +64,7 @@ class ISSGetInvoiceDataForm extends FormBase {
       '#title' => 'RFC',
       '#required' => TRUE,
       '#default_value' => $currentUser['rfc'] ?? '',
-      '#description' => 'Deberá señanal correctamente cada letra o número que conforma su RFC tal cual aparece en su constancia de situación fiscal'
+      '#description' => 'Deberá señalar correctamente cada letra o número que conforma su RFC tal cual aparece en su constancia de situación fiscal'
     ];
     $form['regimen_fiscal'] = [
       '#type' => 'select',
