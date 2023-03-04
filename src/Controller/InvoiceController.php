@@ -74,7 +74,13 @@ class InvoiceController extends ControllerBase {
     $api_endpoint = $config->get('api_endpoint');
     if (!(empty($api_key) || empty($api_endpoint))) {
       //validate user purchase
-      $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
+      //$ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
+      $ppss_sales = \Drupal::database()->select('ppss_sales_details', 'sd');
+      $ppss_sales->join('ppss_sales', 's', 'sd.sid = s.id');
+      $ppss_sales->condition('sd.id', $id);
+      $ppss_sales->condition('uid', $this->currentUser()->id());
+      $ppss_sales->fields('sd', ['id', 'created']);
+      //$ppss_sales->fields('s', ['mail', 'platform', 'details']);
       $sales = $ppss_sales->execute()->fetchAssoc();
       $message = '';
       if($sales > 0) {
@@ -131,10 +137,17 @@ class InvoiceController extends ControllerBase {
     ];
   }
 
-  public function receipt($id){
-    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? \Drupal::routeMatch()->getParameter('user') : $this->currentUser()->id();
-    $ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $user_id)->fields('s');
+  public function receipt($user, $id){
+    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? $user : $this->currentUser()->id();
+    //obtener los detalles del pago recurrente
+    $ppss_sales = \Drupal::database()->select('ppss_sales_details', 'sd');
+    $ppss_sales->join('ppss_sales', 's', 'sd.sid = s.id');
+    $ppss_sales->condition('sd.id', $id);
+    $ppss_sales->condition('uid', $user_id);
+    $ppss_sales->fields('sd', ['id', 'created', 'tax', 'price', 'total']);
+    $ppss_sales->fields('s', ['id', 'mail', 'platform', 'details']);
     $sales = $ppss_sales->execute()->fetchAssoc();
+
     if($sales > 0) {
       $details = json_decode($sales['details']);
       $data = [
@@ -143,8 +156,9 @@ class InvoiceController extends ControllerBase {
         "platform" => $sales["platform"],
         "created" => date("d/m/Y",$sales["created"]),
         "product" => $details->description,
-        "total" => $details->plan->payment_definitions[0]->amount->value,
-        "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        "total" => $sales['price'],
+        "total" => $sales['total'],
+        "iva" => $sales['tax'],
         "details" => $details->plan->payment_definitions[0],
         "user" => $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name
       ];
@@ -227,9 +241,14 @@ class InvoiceController extends ControllerBase {
     if($sales) {
       $details = json_decode($sales['details']);//get details sale
       //get recurring payments
-      $payments_query = \Drupal::database()->select('ppss_sales_details', 's')->condition('sid', $sales['id'])->fields('s')->orderBy('created', 'DESC');;
+      $payments_query = \Drupal::database()->select('ppss_sales_details', 'sd');
+      $payments_query->leftJoin('iss_invoices', 'i', 'sd.id = i.sid');
+      $payments_query->condition('sd.sid', $sales['id']);
+      $payments_query->fields('sd');
+      $payments_query->fields('i', ['uuid', 'p_general']);
+      $payments_query->orderBy('sd.id', 'DESC');
       $payments = $payments_query->execute()->fetchAll();
-      //build cancellation url
+      //cancellation url
       $url_cancel = Url::fromRoute('ppss.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
 
       $data = [
@@ -244,8 +263,9 @@ class InvoiceController extends ControllerBase {
         "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
         'payments' => $payments,
         'cancel' => $sales["status"] && $sales["expire"] == null ? Link::fromTextAndUrl($this->t('Cancel'), $url_cancel) : '',
-        'last_pay' => $payments[0]->created,
-        'expire' => $sales["expire"]
+        'last_pay' => $payments[0]->created ?? '',
+        'expire' => $sales["expire"],
+        'user' => $user_id
       ];
       //show data in template
       return [

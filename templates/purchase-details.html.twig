@@ -32,9 +32,19 @@
         <tr>
           <td>{{ payment.created|date("d/m/Y") }} </td>
           <td>{{ sale.product }} </td>
-          <td>- ${{ payment.total|number_format(2, '.', ',') }} </td>
-          <td><a href="/user/receipt/{{payment.id}}" target='_blank'>Receipt</a></td>
-          <td><a href="/user/invoice/{{payment.id}}">Invoice</a></td>
+          <td>${{ payment.total|number_format(2, '.', ',') }} </td>
+          <td>{{payment.id}}<a href="/user/{{sale.user}}/receipt/{{payment.id}}" target='_blank'>{{ 'Receipt'|trans }}</a></td>
+          <td>
+            <a href="/user/{{sale.user}}/invoice/{{payment.id}}">
+            {% if payment.p_general == 0 %}
+              {% if payment.uuid %}
+                Consultar Factura
+              {% else %}
+                Emitir Factura
+              {% endif %}
+            {% endif %}
+            </a>
+          </td>
         </tr>
         {% endfor %}
       </table>

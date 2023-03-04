@@ -18,7 +18,7 @@
       <td>{{sale.product}}</td>
       <td>{{sale.platform}}</td>
       <td>$ {{ sale.iva|number_format(2, '.', ',') }}</td>
-      <td>$ {{ sale.total|number_format(2, '.', ',') }}</td>
+      <td>$ {{ sale.price|number_format(2, '.', ',') }}</td>
     </tr>
     <tr>
       <td colspan="3"></td>
