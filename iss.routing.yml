@@ -26,6 +26,13 @@ iss.invoice:
     _title: 'Generate invoice'
   requirements:
     _user_is_logged_in: 'TRUE'
+iss.show_invoice:
+  path: '/user/{user}/show_invoice/{id}'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::showInvoice'
+    _title: 'Mi factura'
+  requirements:
+    _user_is_logged_in: 'TRUE'
 iss.receipt:
   path: '/user/{user}/receipt/{id}'
   defaults:

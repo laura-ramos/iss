@@ -74,7 +74,6 @@ class InvoiceController extends ControllerBase {
     $api_endpoint = $config->get('api_endpoint');
     if (!(empty($api_key) || empty($api_endpoint))) {
       //validate user purchase
-      //$ppss_sales = \Drupal::database()->select('ppss_sales', 's')->condition('id', $id)->condition('uid', $this->currentUser()->id())->fields('s');
       $ppss_sales = \Drupal::database()->select('ppss_sales_details', 'sd');
       $ppss_sales->join('ppss_sales', 's', 'sd.sid = s.id');
       $ppss_sales->condition('sd.id', $id);
@@ -88,23 +87,24 @@ class InvoiceController extends ControllerBase {
         $invoice = $query_invoice->execute()->fetchAssoc();
         //check if an invoice already exists
         if($invoice > 0) {
-          $uuid =  $invoice['uuid'];
-          $pdf =  $invoice['pdf'];
-          $xml =  $invoice['xml'];
-          $created =  $invoice['created'];
-          $message = "<h5>Su factura ya fue generada</h5>
-            <p>Folio Fiscal UUID: $uuid<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
+          $message = "<h5>Su factura ya fue generada</h5>";
         } else {
           //Validar la fecha de la compra
           $first_day = strtotime(date("Y-m-01"));//first day of the current month 
-          $last_day = strtotime(date("Y-m-t 23:59:00"));//last day of the current month 
+          $last_day = strtotime(date("Y-m-t 23:59:00"));//last day of the current month
+          //validar la fecha del pago recurrente
+          $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
           if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
+            //validar que exista datos fiscales del usuario
             $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
             $user = $query_user->execute()->fetchAssoc();
             $url = Url::fromRoute('iss.user_data_form', ['user' => $this->currentUser()->id()]);
             if($user > 0) {
+              //llamar al sevicio para generar la factura
               $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
+              //verificar la respuesta del servicio
               if($invoice->code ?? false && $invoice->code == '200') {
+                //mostrar los datos de la factura
                 $pdf =  $invoice->cfdi->PDF;
                 $xml =  $invoice->cfdi->XML;
                 $UUID =  $invoice->cfdi->UUID;
@@ -156,7 +156,7 @@ class InvoiceController extends ControllerBase {
         "platform" => $sales["platform"],
         "created" => date("d/m/Y",$sales["created"]),
         "product" => $details->description,
-        "total" => $sales['price'],
+        "price" => $sales['price'],
         "total" => $sales['total'],
         "iva" => $sales['tax'],
         "details" => $details->plan->payment_definitions[0],
@@ -182,6 +182,7 @@ class InvoiceController extends ControllerBase {
     //create table header
     $header_table = array(
       'folio' => $this->t('Folio'),
+      'id' => $this->t('subscription'),
       'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -192,13 +193,15 @@ class InvoiceController extends ControllerBase {
     );
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
+    $query->join('ppss_sales_details', 'sd', 's.id = sd.sid');
     $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
     $query->leftJoin('iss_user_invoice', 'ui', 's.uid = ui.uid');
     $query->condition('s.created', array($start_date, $end_date), 'BETWEEN');
-    $query->fields('s', ['id','uid','platform','details', 'created', 'status']);
+    $query->fields('s', ['id','uid','platform','details', 'created', 'status', 'id_subscription']);
+    $query->fields('sd', ['id','total', 'created']);
     $query->fields('i',['uuid','p_general']);
     $query->fields('ui',['rfc', 'mail']);
-    $query->orderBy('id', 'ASC');
+    $query->orderBy('sd_id', 'DESC');
     $results = $query->execute()->fetchAll();
 
     $rows = array();
@@ -206,11 +209,12 @@ class InvoiceController extends ControllerBase {
       $sale = json_decode($data->details);
       //print the data from table
       $rows[] = array(
-        'folio' => $data->id,
+        'folio' => $data->sd_id,
+        'id' => $data->id_subscription,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
-        'date' => date('d-m-Y', $data->created),
+        'date' => date('d-m-Y', $data->sd_created),
         'user' => $data->mail,
         'invoice' => $data->uuid ? 'Facturado': 'En espera',
         'type' => $data->p_general ? 'Público en general' : $data->rfc,
@@ -240,12 +244,12 @@ class InvoiceController extends ControllerBase {
     //if exist sale
     if($sales) {
       $details = json_decode($sales['details']);//get details sale
-      //get recurring payments
+      //get listining recurring payments
       $payments_query = \Drupal::database()->select('ppss_sales_details', 'sd');
       $payments_query->leftJoin('iss_invoices', 'i', 'sd.id = i.sid');
       $payments_query->condition('sd.sid', $sales['id']);
-      $payments_query->fields('sd');
-      $payments_query->fields('i', ['uuid', 'p_general']);
+      $payments_query->fields('sd', ['id', 'total', 'created']);
+      $payments_query->fields('i', ['id', 'uuid', 'p_general']);
       $payments_query->orderBy('sd.id', 'DESC');
       $payments = $payments_query->execute()->fetchAll();
       //cancellation url
@@ -280,4 +284,24 @@ class InvoiceController extends ControllerBase {
     }
   }
 
+  /**
+   * 
+   *   Show generated invoice.
+   */
+  public function showInvoice($user, $id) {
+    $query_invoice = \Drupal::database()->select('iss_invoices', 'i')->condition('uuid', $id)->fields('i');
+    $invoice = $query_invoice->execute()->fetchAssoc();
+
+    $uuid =  $invoice['uuid'];
+    $pdf =  $invoice['pdf'];
+    $xml =  $invoice['xml'];
+    $created =  $invoice['created'];
+    $message = "<h5>Detalles de Facturación</h5>
+    <p>Folio Fiscal UUID: $uuid<br>Fecha: $created <br> <a href='$pdf' target='_blank'>Visualizar PDF</a> <a href='$xml' target='_blank'>Descargar XML</a></p>";
+
+    return [
+      '#type' => 'markup',
+      '#markup' => "$message"
+    ];
+  }
 }

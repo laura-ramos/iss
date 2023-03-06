@@ -35,15 +35,17 @@
           <td>${{ payment.total|number_format(2, '.', ',') }} </td>
           <td>{{payment.id}}<a href="/user/{{sale.user}}/receipt/{{payment.id}}" target='_blank'>{{ 'Receipt'|trans }}</a></td>
           <td>
-            <a href="/user/{{sale.user}}/invoice/{{payment.id}}">
             {% if payment.p_general == 0 %}
               {% if payment.uuid %}
-                Consultar Factura
+                <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">Consultar Factura</a>
               {% else %}
-                Emitir Factura
+                <a href="/user/invoice/{{payment.id}}">Emitir Factura</a>
+              {% endif %}
+            {% else %}
+              {% if user.haspermission('access user profiles') %}
+                <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">Consultar Factura</a>
               {% endif %}
             {% endif %}
-            </a>
           </td>
         </tr>
         {% endfor %}

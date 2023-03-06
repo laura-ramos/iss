@@ -22,7 +22,7 @@
     </tr>
     <tr>
       <td colspan="3"></td>
-      <td>$ {{ (sale.iva + sale.total)|number_format(2, '.', ',') }}</td>
+      <td>$ {{ sale.total|number_format(2, '.', ',') }}</td>
     </tr>
   </table>
   <button onclick="window.print();return false;" >Imprimir Recibo</button>
