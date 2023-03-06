@@ -26,49 +26,48 @@ class IssApiService {
 
   public function createInvoice($p_general, $id_sale) {
     $config =  \Drupal::config('iss.settings');
+    $ppss_config =  \Drupal::config('ppss.settings');
     $client = \Drupal::httpClient();
     $datosFactura = [];
-
-    $ppss_sales = $this->database->select('ppss_sales', 's')->condition('id', $id_sale)->fields('s');
+    //obtener el pago la cual se va facturar
+    $ppss_sales = \Drupal::database()->select('ppss_sales_details', 'sd');
+    $ppss_sales->join('ppss_sales', 's', 'sd.sid = s.id');
+    $ppss_sales->condition('sd.id', $id_sale);
+    $ppss_sales->fields('sd', ['id', 'created','tax', 'price', 'total']);
+    $ppss_sales->fields('s', ['uid','details']);
     $sales = $ppss_sales->execute()->fetchAssoc();
-    $sale = json_decode($sales['details']);
-
-    $query_user = $this->database->select('iss_user_invoice', 'i')->condition('uid', $sales['uid'])->fields('i');
-    $user = $query_user->execute()->fetchAssoc();
-
-    $query_folio = $this->database->query("SELECT max(folio) as folio from {iss_invoices}");
-    $folio = $query_folio->fetchAssoc();
+    $details = json_decode($sales['details']);//detalle de la venta
+    //obtener los datos fiscales del usuario
+    $user = $this->database->select('iss_user_invoice', 'i')->condition('uid', $sales['uid'])->fields('i')->execute()->fetchAssoc();
+    //obtener el ultimo folio de las facturas generadas
+    $folio = $this->database->query("SELECT max(folio) as folio from {iss_invoices}")->fetchAssoc();
+    
     try {
       $conceptos = array();
       $unconcepto = array();
-      $base = 0;
-      $importe = 0;
-      $impuesto = 0;
-      foreach($sale->plan->payment_definitions as $item) {
-        $base += $item->amount->value;
-        $importe += $item->amount->value + $item->charge_models[0]->amount->value;
-        $impuesto += $item->charge_models[0]->amount->value;
-        $unconcepto = [
-          'ObjetoImp' => '02',
-          'ClaveProdServ' => '82101600',
-          'NoIdentificacion' => '01',
-          'Cantidad' => 1,
-          'ClaveUnidad' => 'E48',
-          'Descripcion' => $sale->description,
-          'ValorUnitario' => $item->amount->value,
-          'Importe' => $item->amount->value,
-          'Descuento' => 0
-        ];
-        $impuestosTraslados = array(
-          'Base' => $item->amount->value,
-          'Impuesto' => '002',
-          'TipoFactor' => 'Tasa',
-          'TasaOCuota' => '0.160000',
-          'Importe' => $item->charge_models[0]->amount->value
-        );
-        $unconcepto['Impuestos']['Traslados'][0] = $impuestosTraslados;
-        $conceptos[] = $unconcepto;
-      }
+      $base = $sales['price'];
+      $importe = $sales['total'];
+      $impuesto = $sales['tax'];
+      $unconcepto = [
+        'ObjetoImp' => '02',
+        'ClaveProdServ' => '82101600',
+        'NoIdentificacion' => '01',
+        'Cantidad' => 1,
+        'ClaveUnidad' => 'E48',
+        'Descripcion' => $details->description,
+        'ValorUnitario' => $base,
+        'Importe' => $importe,
+        'Descuento' => 0
+      ];
+      $impuestosTraslados = array(
+        'Base' => $base,
+        'Impuesto' => '002',
+        'TipoFactor' => 'Tasa',
+        'TasaOCuota' => '0.160000',
+        'Importe' => $impuesto
+      );
+      $unconcepto['Impuestos']['Traslados'][0] = $impuestosTraslados;
+      $conceptos[] = $unconcepto;
 
       $datosFactura['Version'] = '4.0';
       $datosFactura['Exportacion'] = '01';
@@ -79,7 +78,7 @@ class IssApiService {
       $datosFactura['CondicionesDePago'] = "";
       $datosFactura['SubTotal'] = $base;
       $datosFactura['Descuento'] = null;
-      $datosFactura['Moneda'] = $sale->plan->payment_definitions[0]->amount->currency;
+      $datosFactura['Moneda'] = $ppss_config->get('currency_code');
       $datosFactura['TipoCambio'] = 1;
       $datosFactura['Total'] = $importe;
       $datosFactura['TipoDeComprobante'] = 'I';
@@ -202,23 +201,28 @@ class IssApiService {
   public function globalInvoice() {
     $config =  \Drupal::config('iss.settings');
     $first_day = strtotime(date("Y-m-01"));//first day of the current month
-    $start_day = strtotime(date("Y-m-t ".$config->get('time')."").$config->get('stamp_date'));
+    $start_day = strtotime(date("Y-m-t ".$config->get('time')."").$config->get('stamp_date'));//fecha y hora de inicio de generación de factura
     $today = \Drupal::time()->getRequestTime();
-    $last_day = strtotime(date("Y-m-t 23:45:00").$config->get('stamp_date'));//last day of the current month 
+    $last_day = strtotime(date("Y-m-t 23:45:00").$config->get('stamp_date'));//last day of the current month
+    //validar la fecha y hora del inicio de la generacíon de facturación
     if(($today > $start_day) && ($today < $last_day)) {
-      //obtener ppss_sales que no han sido facturados
-      $query = $this->database->select('ppss_sales', 's');
+      //obtener los pagos recurrentes que no han sido facturados desde el primer hasta el ultimo dia del mes
+      $query = $this->database->select('ppss_sales_details', 's');
       $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
       $query->condition('s.created', array($first_day, $last_day), 'BETWEEN');
-      $query->fields('s', ['id','uid','mail']);
+      $query->fields('s', ['id']);
       $query->fields('i',['uuid']);
       $query->range(0, $config->get('num_rows'));
       $num = 0;
       $results = $query->execute()->fetchAll();
+      //recorrer los pagos
       foreach($results as $result) {
+        //validar que el pago no tenga factura generada
         if(!$result->uuid) {
+          //llamar a la funcion para generar la factura
           $invoice = $this->createInvoice(true, $result->id);
           if($invoice->code ?? false && $invoice->code == '200') {
+            //contador de facturas generadas
             $num = $num + 1;
           } else {
             \Drupal::logger('ISS')->error('Error al generar factura de la venta '.$result->id.'-'.$invoice);
