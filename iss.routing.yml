@@ -26,8 +26,15 @@ iss.invoice:
     _title: 'Generate invoice'
   requirements:
     _user_is_logged_in: 'TRUE'
+iss.show_invoice:
+  path: '/user/{user}/show_invoice/{id}'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::showInvoice'
+    _title: 'Mi factura'
+  requirements:
+    _user_is_logged_in: 'TRUE'
 iss.receipt:
-  path: '/user/receipt/{id}'
+  path: '/user/{user}/receipt/{id}'
   defaults:
     _controller: '\Drupal\iss\Controller\InvoiceController::receipt'
     _title: 'Receipt'
@@ -40,3 +47,10 @@ iss.list:
     _title: 'Sales listing'
   requirements:
     _permission: 'administer iss'
+iss.show_purchase:
+  path: '/user/{user}/show_purchase/{id}'
+  defaults:
+    _controller: '\Drupal\iss\Controller\InvoiceController::showPurchase'
+    _title: 'Details'
+  requirements:
+    _user_is_logged_in: 'TRUE'

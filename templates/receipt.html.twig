@@ -1,4 +1,5 @@
 <div>
+  Folio: <b>{{sale.folio}}</b><br>
   <b>{{sale.user}}</b><br>
   <div>{{sale.email}}</div>
   <div>Fecha de la compra {{sale.created}}</div>
@@ -17,11 +18,11 @@
       <td>{{sale.product}}</td>
       <td>{{sale.platform}}</td>
       <td>$ {{ sale.iva|number_format(2, '.', ',') }}</td>
-      <td>$ {{ sale.total|number_format(2, '.', ',') }}</td>
+      <td>$ {{ sale.price|number_format(2, '.', ',') }}</td>
     </tr>
     <tr>
       <td colspan="3"></td>
-      <td>$ {{ (sale.iva + sale.total)|number_format(2, '.', ',') }}</td>
+      <td>$ {{ sale.total|number_format(2, '.', ',') }}</td>
     </tr>
   </table>
   <button onclick="window.print();return false;" >Imprimir Recibo</button>

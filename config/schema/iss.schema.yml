@@ -26,3 +26,5 @@ iss.settings:
       type: string
     c_pago:
       type: string
+    time:
+      type: string

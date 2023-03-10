@@ -1,0 +1,58 @@
+<div style="display: flex;justify-content: center;">
+  <div>
+    <div style="text-align: center;">
+      <h2>{{sale.product}}<h2>
+      <h3>${{(sale.iva + sale.total)|number_format(2, '.', ',') }}</h3>
+      <p>El último pago se realizó el: {{sale.last_pay|date("d/m/Y")}}</p>
+    <div>
+    <hr>
+    <h4>Detalles de la compra</h4>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Estado</p> <div>{{sale.status}} {{sale.cancel}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Forma de pago</p> <div>{{sale.platform}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Los pagos se realizarán cada</p> <div>{{sale.frequency}}</div>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <p>Fecha de inicio</p> <div>{{sale.created}}</div>
+    </div>
+    {% if sale.expire %}
+    <div style="display: flex; justify-content: space-between;">
+      <p>Fecha de finalización</p> <div>{{sale.expire|date("d/m/Y")}}</div>
+    </div>
+    {% endif %}
+    <hr>
+    <h4>Detalles de facturación</h4>
+    <div>
+      <table>
+        {% for payment in sale.payments %}
+        <tr>
+          <td>{{ payment.created|date("d/m/Y") }} </td>
+          <td>{{ sale.product }} </td>
+          <td>${{ payment.total|number_format(2, '.', ',') }} </td>
+          <td>{{payment.id}}<a href="/user/{{sale.user}}/receipt/{{payment.id}}" target='_blank'>{{ 'Receipt'|trans }}</a></td>
+          <td>
+            {% if payment.p_general == 0 %}
+              {% if payment.uuid %}
+                <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">Consultar Factura</a>
+              {% else %}
+                <a href="/user/invoice/{{payment.id}}">Emitir Factura</a>
+              {% endif %}
+            {% else %}
+              {% if user.haspermission('access user profiles') %}
+                <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">Consultar Factura</a>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <br>
+    {{sale.prueba}}
+  </div>
+</div>
+   
