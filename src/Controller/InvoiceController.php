@@ -22,7 +22,6 @@ class InvoiceController extends ControllerBase {
     $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? \Drupal::routeMatch()->getParameter('user') : $this->currentUser()->id();
     //create table header
     $header_table = array(
-      'folio' => $this->t('Folio'),
       'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -43,7 +42,6 @@ class InvoiceController extends ControllerBase {
 
       //print the data from table
       $rows[] = array(
-        'folio' => $data->id,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
@@ -165,6 +163,7 @@ class InvoiceController extends ControllerBase {
       return [
         '#theme' => 'receipt',
         '#sale' => $data,
+        '#cache' => ['max-age' => 0],
       ];
     } else {
       return [
@@ -209,7 +208,6 @@ class InvoiceController extends ControllerBase {
       $sale = json_decode($data->details);
       //print the data from table
       $rows[] = array(
-        'folio' => $data->sd_id,
         'id' => $data->id_subscription,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
@@ -257,8 +255,9 @@ class InvoiceController extends ControllerBase {
 
       $data = [
         "id" => $sales["id"],
+        "subscription" => $sales["id_subscription"],
         "email" => $sales["mail"],
-        "status" => $sales["status"] ? 'Activo' : 'Inactivo',
+        "status" => $sales["status"] ? 'ACTIVE' : 'INACTIVE',
         "platform" => $sales["platform"],
         "created" => date("d/m/Y",$sales["created"]),
         "frequency" => $sales["frequency"],
@@ -275,6 +274,7 @@ class InvoiceController extends ControllerBase {
       return [
         '#theme' => 'purchase-details',
         '#sale' => $data,
+        '#cache' => ['max-age' => 0],
       ];
     } else {
       return [
