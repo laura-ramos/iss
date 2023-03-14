@@ -44,7 +44,7 @@ iss.list:
   path: '/admin/config/services/iss/list'
   defaults:
     _controller: '\Drupal\iss\Controller\InvoiceController::listSales'
-    _title: 'Sales listing'
+    _title: 'Payment list'
   requirements:
     _permission: 'administer iss'
 iss.show_purchase:
