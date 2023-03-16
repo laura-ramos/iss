@@ -56,7 +56,7 @@ class IssApiService {
         'ClaveUnidad' => 'E48',
         'Descripcion' => $details->description,
         'ValorUnitario' => $base,
-        'Importe' => $importe,
+        'Importe' => $base,
         'Descuento' => 0
       ];
       $impuestosTraslados = array(
@@ -114,8 +114,7 @@ class IssApiService {
         $datosFactura["Receptor"]["NoExt"] = $user['number_ext'];
         $datosFactura["Receptor"]["NoInt"] = $user['number_int'];
         $datosFactura["Receptor"]["Colonia"] = $user['suburb'];
-        $datosFactura["Receptor"]["Loacalidad"] = $user['city'];;
-        //$datosFactura["Receptor"]["Referencia"] = null;
+        $datosFactura["Receptor"]["Loacalidad"] = $user['city'];
         $datosFactura["Receptor"]["Municipio"] = $user['town'];
         $datosFactura["Receptor"]["Estado"] = $user['state'];
         $datosFactura["Receptor"]["Pais"] = 'MEXICO';
