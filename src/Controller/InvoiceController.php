@@ -91,7 +91,6 @@ class InvoiceController extends ControllerBase {
           $first_day = strtotime(date("Y-m-01"));//first day of the current month 
           $last_day = strtotime(date("Y-m-t 23:59:00"));//last day of the current month
           //validar la fecha del pago recurrente
-          $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
           if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
             //validar que exista datos fiscales del usuario
             $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
