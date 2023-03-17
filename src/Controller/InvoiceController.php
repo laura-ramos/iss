@@ -188,6 +188,7 @@ class InvoiceController extends ControllerBase {
       'user' => $this->t('User'),
       'invoice' => $this->t('Invoice'),
       'type' => $this->t('Type'),
+      'event' => $this->t('Event ID'),
     );
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
@@ -196,7 +197,7 @@ class InvoiceController extends ControllerBase {
     $query->leftJoin('iss_user_invoice', 'ui', 's.uid = ui.uid');
     $query->condition('s.created', array($start_date, $end_date), 'BETWEEN');
     $query->fields('s', ['id','uid','platform','details', 'created', 'status', 'id_subscription']);
-    $query->fields('sd', ['id','total', 'created']);
+    $query->fields('sd', ['id','total', 'created', 'event_id']);
     $query->fields('i',['uuid','p_general']);
     $query->fields('ui',['rfc', 'mail']);
     $query->orderBy('sd_id', 'DESC');
@@ -216,6 +217,7 @@ class InvoiceController extends ControllerBase {
         'user' => $data->mail,
         'invoice' => $data->uuid ? 'Facturado': 'En espera',
         'type' => $data->p_general ? 'Público en general' : $data->rfc,
+        'event' => $data->event_id,
       );
     }
     //display data in site
