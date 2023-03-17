@@ -91,7 +91,6 @@ class InvoiceController extends ControllerBase {
           $first_day = strtotime(date("Y-m-01"));//first day of the current month 
           $last_day = strtotime(date("Y-m-t 23:59:00"));//last day of the current month
           //validar la fecha del pago recurrente
-          $invoice = \Drupal::service('iss.api_service')->createInvoice(false, $sales['id']);
           if($sales['created'] >= $first_day && $sales['created'] < $last_day) {
             //validar que exista datos fiscales del usuario
             $query_user = \Drupal::database()->select('iss_user_invoice', 'i')->condition('uid', $this->currentUser()->id())->fields('i');
@@ -181,7 +180,7 @@ class InvoiceController extends ControllerBase {
     //create table header
     $header_table = array(
       'folio' => $this->t('Folio'),
-      'id' => $this->t('subscription'),
+      'id' => $this->t('Subscription ID'),
       'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -208,6 +207,7 @@ class InvoiceController extends ControllerBase {
       $sale = json_decode($data->details);
       //print the data from table
       $rows[] = array(
+        'folio' => $data->sd_id,
         'id' => $data->id_subscription,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
