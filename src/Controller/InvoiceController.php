@@ -180,7 +180,7 @@ class InvoiceController extends ControllerBase {
     //create table header
     $header_table = array(
       'folio' => $this->t('Folio'),
-      'id' => $this->t('subscription'),
+      'id' => $this->t('Subscription ID'),
       'name' => $this->t('Plan'),
       'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
@@ -207,6 +207,7 @@ class InvoiceController extends ControllerBase {
       $sale = json_decode($data->details);
       //print the data from table
       $rows[] = array(
+        'folio' => $data->sd_id,
         'id' => $data->id_subscription,
         'name' => $sale->description,
         'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
