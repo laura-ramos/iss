@@ -1,72 +1,73 @@
-<div style="display: flex;justify-content: center;">
-  <div>
-    <div style="text-align: center;">
-      <h2>{{sale.product}}<h2>
-      <h3>${{(sale.iva + sale.total)|number_format(2, '.', ',') }}</h3>
-      <p>{{ 'The last payment was made on:'|trans }} {{sale.last_pay|date("d/m/Y")}}</p>
-    <div>
-    <hr>
-    <h4>{{ 'Purchase details'|trans }}</h4>
-    <div style="display: flex; justify-content: space-between;">
-      <p>{{ 'Status'|trans }}</p> <div>{{sale.status|trans}} {{sale.cancel}}</div>
+<div>
+  <center>
+    <div style="max-width: 600px;">
+      <div style="text-align: center;">
+        <h2>{{sale.product}}<h2>
+        <h3>${{(sale.iva + sale.total)|number_format(2, '.', ',') }}</h3>
+        <p>{{ 'The last payment was made on:'|trans }} {{sale.last_pay|date("d/m/Y")}}</p>
+      </div>
+      <hr>
+      <h4>{{ 'Purchase details'|trans }}</h4>
+      <div style="display: flex; justify-content: space-between;">
+        <p>{{ 'Status'|trans }}</p> <div>{{sale.status|trans}} {{sale.cancel}}</div>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <p>{{ 'Subscription ID'|trans }}</p> <div>{{sale.subscription}}</div>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <p>{{ 'Payment method'|trans }}</p> <div>{{sale.platform}}</div>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <p>{{ 'Payments will be made every'|trans }}</p> <div>{{ sale.frequency|trans }}</div>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <p>{{ 'Start date'|trans }}</p> <div>{{sale.created}}</div>
+      </div>
+      {% if sale.expire %}
+      <div style="display: flex; justify-content: space-between;">
+        <p>{{ 'Finish date'|trans }}</p> <div>{{sale.expire|date("d/m/Y")}}</div>
+      </div>
+      {% endif %}
+      <hr>
     </div>
-    <div style="display: flex; justify-content: space-between;">
-      <p>{{ 'Subscription ID'|trans }}</p> <div>{{sale.subscription}}</div>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
-      <p>{{ 'Payment method'|trans }}</p> <div>{{sale.platform}}</div>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
-      <p>{{ 'Payments will be made every'|trans }}</p> <div>{{ sale.frequency|trans }}</div>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
-      <p>{{ 'Start date'|trans }}</p> <div>{{sale.created}}</div>
-    </div>
-    {% if sale.expire %}
-    <div style="display: flex; justify-content: space-between;">
-      <p>{{ 'Finish date'|trans }}</p> <div>{{sale.expire|date("d/m/Y")}}</div>
-    </div>
-    {% endif %}
-    <hr>
     <h4>{{ 'Billing details'|trans }}</h4>
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <td>{{ 'Folio'|trans }}</td>
-            <td>{{ 'Date'|trans }}</td>
-            <td>{{ 'Name'|trans }}</td>
-            <td>{{ 'Total'|trans }}</td>
-            <td></td>
-            <td></td>
-          </tr>
-        </thead>
-        {% for payment in sale.payments %}
-          <tr>
-            <td>{{ payment.id }}</td>
-            <td>{{ payment.created|date("d/m/Y") }} </td>
-            <td>{{ sale.product }} </td>
-            <td>${{ payment.total|number_format(2, '.', ',') }} </td>
-            <td><a href="/user/{{sale.user}}/receipt/{{payment.id}}" target='_blank'>{{ 'Receipt'|trans }}</a></td>
-            <td>
-              {% if payment.uuid %}
-                {% if payment.p_general == 1 %}
-                  {% if user.haspermission('access user profiles') %}
-                    <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">{{ 'Show invoice'|trans }}</a>
-                  {% endif %}
-                {% else %}
+    <br>
+    <div style="overflow: scroll;">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ 'Folio'|trans }}</th>
+          <th>{{ 'Date'|trans }}</th>
+          <th>{{ 'Name'|trans }}</th>
+          <th>{{ 'Total'|trans }}</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      {% for payment in sale.payments %}
+        <tr>
+          <td>{{ payment.id }}</td>
+          <td>{{ payment.created|date("d/m/Y") }} </td>
+          <td>{{ sale.product }} </td>
+          <td>${{ payment.total|number_format(2, '.', ',') }} </td>
+          <td><a href="/user/{{sale.user}}/receipt/{{payment.id}}" target='_blank'>{{ 'Receipt'|trans }}</a></td>
+          <td>
+            {% if payment.uuid %}
+              {% if payment.p_general == 1 %}
+                {% if user.haspermission('access user profiles') %}
                   <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">{{ 'Show invoice'|trans }}</a>
                 {% endif %}
               {% else %}
-                <a href="/user/invoice/{{payment.id}}">{{ 'Generate invoice'|trans }}</a>
+                <a href="/user/{{sale.user}}/show_invoice/{{payment.uuid}}">{{ 'Show invoice'|trans }}</a>
               {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
+            {% else %}
+              <a href="/user/invoice/{{payment.id}}">{{ 'Generate invoice'|trans }}</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
     </div>
-    <br>
-    {{sale.prueba}}
-  </div>
+  </center>
 </div>
    
