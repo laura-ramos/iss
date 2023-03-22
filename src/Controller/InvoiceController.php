@@ -193,7 +193,7 @@ class InvoiceController extends ControllerBase {
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
     $query->join('ppss_sales_details', 'sd', 's.id = sd.sid');
-    $query->leftJoin('iss_invoices', 'i', 's.id = i.sid');
+    $query->leftJoin('iss_invoices', 'i', 'sd.id = i.sid');
     $query->leftJoin('iss_user_invoice', 'ui', 's.uid = ui.uid');
     $query->condition('s.created', array($start_date, $end_date), 'BETWEEN');
     $query->fields('s', ['id','uid','platform','details', 'created', 'status', 'id_subscription']);
