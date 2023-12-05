@@ -3,7 +3,7 @@
     <div style="max-width: 600px;">
       <div style="text-align: center;">
         <h2>{{sale.product}}<h2>
-        <h3>${{(sale.iva + sale.total)|number_format(2, '.', ',') }}</h3>
+        <h3>${{sale.total|number_format(2, '.', ',') }}</h3>
         <p>{{ 'The last payment was made on:'|trans }} {{sale.last_pay|date("d/m/Y")}}</p>
       </div>
       <hr>

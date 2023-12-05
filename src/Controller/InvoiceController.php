@@ -155,6 +155,11 @@ class InvoiceController extends ControllerBase {
 
     if ($sales > 0) {
       $details = json_decode($sales['details']);
+      if ($sales['platform'] == 'PayPal') {
+        $user_name = $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name;
+      } else if ($sales['platform'] == 'Stripe') {
+        $user_name = $details->customer_details->name;
+      }
       $data = [
         "folio" => $sales['id'],
         "email" => $sales["mail"],
@@ -164,8 +169,7 @@ class InvoiceController extends ControllerBase {
         "price" => $sales['price'],
         "total" => $sales['total'],
         "iva" => $sales['tax'],
-        "details" => $details->plan->payment_definitions[0],
-        "user" => $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name
+        "user" => $user_name
       ];
       return [
         '#theme' => 'receipt',
@@ -256,7 +260,7 @@ class InvoiceController extends ControllerBase {
       $payments_query = \Drupal::database()->select('ppss_sales_details', 'payments');
       $payments_query->leftJoin('iss_invoices', 'invoices', 'payments.id = invoices.sid');
       $payments_query->condition('payments.sid', $sales['id']);
-      $payments_query->fields('payments', ['id', 'total', 'created']);
+      $payments_query->fields('payments', ['id', 'total', 'created', 'tax']);
       $payments_query->fields('invoices', ['uuid', 'p_general']);
       $payments_query->orderBy('payments.id', 'DESC');
       $payments = $payments_query->execute()->fetchAll();
@@ -272,8 +276,7 @@ class InvoiceController extends ControllerBase {
         "created" => date("d/m/Y", $sales["created"]),
         "frequency" => $sales["frequency"],
         "product" => $details->description,
-        "total" => $details->plan->payment_definitions[0]->amount->value,
-        "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        "total" => $payments[0]->total,
         'payments' => $payments,
         'cancel' => $sales["status"] && $sales["expire"] == null ? Link::fromTextAndUrl($this->t('Cancel'), $url_cancel) : '',
         'last_pay' => $payments[0]->created ?? '',
