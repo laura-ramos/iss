@@ -23,11 +23,10 @@ class InvoiceController extends ControllerBase {
     //create table header
     $header_table = array(
       'name' => $this->t('Plan'),
-      'total' => $this->t('Total price'),
       'platform' => $this->t('Payment type'),
       'date' => $this->t('Date'),
       'status' => $this->t('Status'),
-      'details' => $this->t('Details')
+      'details' => $this->t('Options')
     );
     //select records from table ppss_sales
     $query = \Drupal::database()->select('ppss_sales', 's');
@@ -38,16 +37,20 @@ class InvoiceController extends ControllerBase {
     $rows = array();
     foreach ($results as $data) {
       $sale = json_decode($data->details);
-      $details = Url::fromRoute('iss.show_purchase', ['user' => $user_id, 'id' => $data->id], []);
+      $payments = Url::fromRoute('iss.show_purchase', ['user' => $user_id, 'id' => $data->id], []);
 
+      if ($data->platform == 'Stripe') {
+        $details = Url::fromRoute('stripe_payment.manage_subscription', ['customer' => $sale->customer], []);
+      }
+      
       //print the data from table
       $rows[] = array(
         'name' => $sale->description,
-        'total' => number_format($sale->plan->payment_definitions[0]->amount->value + $sale->plan->payment_definitions[0]->charge_models[0]->amount->value, 2, '.', ','),
         'platform' => $data->platform,
         'date' => date('d/m/Y', $data->created),
         'status' => $data->status ? 'Activo' : 'Inactivo',
-        'details' => Link::fromTextAndUrl($this->t('Details'), $details),
+        'details' => $data->platform == 'Stripe' ? Link::fromTextAndUrl($this->t('Details'), $details) : '',
+        'payments' => Link::fromTextAndUrl($this->t('Payments'), $payments),
       );
     }
     //display data in site
@@ -155,6 +158,11 @@ class InvoiceController extends ControllerBase {
 
     if ($sales > 0) {
       $details = json_decode($sales['details']);
+      if ($sales['platform'] == 'PayPal') {
+        $user_name = $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name;
+      } else if ($sales['platform'] == 'Stripe') {
+        $user_name = $details->customer_details->name;
+      }
       $data = [
         "folio" => $sales['id'],
         "email" => $sales["mail"],
@@ -164,8 +172,7 @@ class InvoiceController extends ControllerBase {
         "price" => $sales['price'],
         "total" => $sales['total'],
         "iva" => $sales['tax'],
-        "details" => $details->plan->payment_definitions[0],
-        "user" => $details->payer->payer_info->first_name." ".$details->payer->payer_info->last_name
+        "user" => $user_name
       ];
       return [
         '#theme' => 'receipt',
@@ -256,12 +263,16 @@ class InvoiceController extends ControllerBase {
       $payments_query = \Drupal::database()->select('ppss_sales_details', 'payments');
       $payments_query->leftJoin('iss_invoices', 'invoices', 'payments.id = invoices.sid');
       $payments_query->condition('payments.sid', $sales['id']);
-      $payments_query->fields('payments', ['id', 'total', 'created']);
+      $payments_query->fields('payments', ['id', 'total', 'created', 'tax']);
       $payments_query->fields('invoices', ['uuid', 'p_general']);
       $payments_query->orderBy('payments.id', 'DESC');
       $payments = $payments_query->execute()->fetchAll();
       //cancellation url
-      $url_cancel = Url::fromRoute('ppss.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
+      if ($sales['platform'] == 'PayPal') {
+        $url_cancel = Url::fromRoute('ppss.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
+      } elseif ($sales['platform'] == 'Stripe') {
+        $url_cancel = Url::fromRoute('stripe_payment.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
+      }
 
       $data = [
         "id" => $sales["id"],
@@ -272,8 +283,7 @@ class InvoiceController extends ControllerBase {
         "created" => date("d/m/Y", $sales["created"]),
         "frequency" => $sales["frequency"],
         "product" => $details->description,
-        "total" => $details->plan->payment_definitions[0]->amount->value,
-        "iva" => $details->plan->payment_definitions[0]->charge_models[0]->amount->value,
+        "total" => $payments[0]->total,
         'payments' => $payments,
         'cancel' => $sales["status"] && $sales["expire"] == null ? Link::fromTextAndUrl($this->t('Cancel'), $url_cancel) : '',
         'last_pay' => $payments[0]->created ?? '',
