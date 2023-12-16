@@ -13,62 +13,6 @@ use GuzzleHttp\Exception\RequestException;
 class InvoiceController extends ControllerBase {
 
   /**
-   * purchaseHistory.
-   *
-   * @return string
-   *   Return purchase history by user.
-   */
-  public function purchaseHistory() {
-    $user_id = \Drupal::currentUser()->hasPermission('access user profiles') ? \Drupal::routeMatch()->getParameter('user') : $this->currentUser()->id();
-    //create table header
-    $header_table = array(
-      'name' => $this->t('Plan'),
-      'platform' => $this->t('Payment type'),
-      'date' => $this->t('Date'),
-      'status' => $this->t('Status'),
-      'details' => $this->t('Options')
-    );
-    //select records from table ppss_sales
-    $query = \Drupal::database()->select('ppss_sales', 's');
-    $query->condition('uid', $user_id);
-    $query->fields('s', ['id','uid','mail','platform','details', 'created', 'status', 'id_subscription']);
-    $results = $query->execute()->fetchAll();
-
-    $rows = array();
-    foreach ($results as $data) {
-      $sale = json_decode($data->details);
-      $payments = Url::fromRoute('iss.show_purchase', ['user' => $user_id, 'id' => $data->id], []);
-
-      if ($data->platform == 'Stripe') {
-        $details = Url::fromRoute('stripe_payment.manage_subscription', ['customer' => $sale->customer], []);
-      }
-      
-      //print the data from table
-      $rows[] = array(
-        'name' => $sale->description,
-        'platform' => $data->platform,
-        'date' => date('d/m/Y', $data->created),
-        'status' => $data->status ? 'Activo' : 'Inactivo',
-        'details' => $data->platform == 'Stripe' ? Link::fromTextAndUrl($this->t('Details'), $details) : '',
-        'payments' => Link::fromTextAndUrl($this->t('Payments'), $payments),
-      );
-    }
-    //display data in site
-    $form['table'] = [
-      '#type' => 'table',
-      '#header' => $header_table,
-      '#rows' => $rows,
-      '#empty' => 'No hay compras',
-      '#attributes' => [
-        'class' => [
-          'nvi-table-invoice',
-        ],
-      ]
-    ];
-    return $form;
-  }
-
-  /**
    *
    * @param $id (ppss_sales_details.id)
    *   create a payment invoice.
@@ -271,7 +215,7 @@ class InvoiceController extends ControllerBase {
       if ($sales['platform'] == 'PayPal') {
         $url_cancel = Url::fromRoute('ppss.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
       } elseif ($sales['platform'] == 'Stripe') {
-        $url_cancel = Url::fromRoute('stripe_payment.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
+        $url_cancel = Url::fromRoute('stripe_gateway.cancel_subscription', ['user' => $user, 'id' => $sales['id']], []);
       }
 
       $data = [
