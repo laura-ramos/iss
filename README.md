@@ -1,49 +1,51 @@
-# ISS
-### Invoicing Simple Service
+# Invoicing Simple Service (ISS)
 
-El módulo se conecta a la api de Factura Digital México para automatizar la facturación electrónica del sitio.
-#### Instrucciones de configuración
+## Introduction
+This module allows site to invoicing with mexican laws service. Module work with Factura Digital México to generate invoices.
 
-1. Instalar y Activar modulo ISS
-2. Agregar el bloques ISS Invoicing Block
-3. Configurar el módulo
-    Ir a /admin/config/services/iss/settings
-    Agregar los datos de configuración
-    - Endpoint
-        Producción: https://app.facturadigital.com.mx 
-        Sandbox: https://sandbox-app.facturadigital.com.mx 
-    - Api key
-        Para obtener la api key se debe de ingresar a https://app.facturadigital.com.mx
-        Da clic en la opción Configuración-> Mis datos fiscales
-        Copiar la API Key y pegalo en la configuración del sitio
-    - Régimen Fiscal
-    - Lugar de expedición
-    - Serie 
-    - Folio
-    - Forma de pago 
-    - Número de registros (Número de registros a facturar cada que se ejecuta el cron).
-    - Fecha para generar facturas para público en general
-    - Hora de inicio para la Facturación de público en general
-4. Agregar permisos en modulo ISS
-    - View iss Block
-    - View the ISS form.
 
-#### Lista de pagos
+## Requirements
+This module requires the following modules:
+[Drupal module PPSS](https://www.drupal.org/project/ppss)
+[Drupal module Stripe Gateway](https://www.drupal.org/project/stripe_gateway)
 
-La lista de pagos muestra los pagos recurrentes recibidos de las suscripciones contratadas.
-Para poder visualizar la lista de pagos:
-1. Ir a /admin/config/services/iss/list (de forma predetermindada muestra los pagos recibidos del mes actual).
-2. Seleccionar la fecha de inicio y fin para la consulta.
-3. Da clic en el botón "Filter" para realizar la búsqueda entre las fechas seleccionadas.
+## Installation
+- Install as you would normally install a contributed Drupal module. See [Installing Modules](https://www.drupal.org/docs/extending-drupal/installing-modules) for more details.
 
-La tabla muestra los siguientes datos:
-- Folio: Folio del pago
-- Subscription ID: ID de la suscripción de paypal
-- Plan: Nombre del plan contratado
-- Total price: Precio del plan
-- Payment type: Tipo de pago
-- Date: Fecha del pago
-- Email: Email del usuario para enviar la factura generada
-- Invoice: Estado de la factura En espera/Facturado
-- Type: Tipo de factura generada RFC/Público en general
-- Event ID: Id del evento del Webhook paypal
+## Configuration
+
+In Factura Digital
+- Register to [Factura digital](https://www.facturadigital.com.mx/) if you haven't yet.
+- Enter your information in Configuracion >> Mis datos fiscales
+- Create your folios and series in Configuracion >> Folios y series
+- Upload your Digital Seal Certificates in Configuracion >> Certificados CSD
+
+In Drupal main menu go to: Configuration » Invoicing Simple Service
+- Enter endpoint url
+If you are in development mode enter https://app.facturadigital.com.mx
+If your are in sandbox mode enter https://sandbox-app.facturadigital.com.mx 
+
+- Enter Api Key 
+To obtain the api key you must log into your account at https://app.facturadigital.com.mx
+
+- Enter Régimen Fiscal
+- Enter expedition place
+- Enter Serie and Folio
+You must generate your folio and series in your account.
+- Select method of payment
+This method apply to all your products.
+- Enter Number of records
+Invoices to be generated every time the cron runs.
+- Date to generate invoices
+Date to generate invoices for the general public.
+
+- Enable permissions:
+   View iss Block
+
+- Add ISS Invoicing Block
+
+
+## How it works
+This module allows you to generate invoices for each payment made, to generate the invoice the user must register their billing information.
+
+We use [Factura digital](https://www.facturadigital.com.mx/) Api to generate invoices.
