@@ -12,8 +12,3 @@ iss.user_data_form:
   base_route: entity.user.canonical
   title: 'Billing'
   weight: 4
-iss.purchase_history:
-  route_name: iss.purchase_history
-  base_route: entity.user.canonical
-  title: 'Purchases'
-  weight: 4

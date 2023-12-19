@@ -275,7 +275,6 @@ class ISSGetInvoiceDataForm extends FormBase {
       ])->condition('uid', $id_user, '=')->execute();
 
       $this->messenger()->addMessage($this->t('Your changes have been successfully saved.'));
-      $form_state->setRedirect('iss.purchase_history', ['user' => $id_user]);
     } else {
       //insert data
       \Drupal::database()->insert('iss_user_invoice')->fields([
@@ -296,7 +295,6 @@ class ISSGetInvoiceDataForm extends FormBase {
       ])->execute();
 
       $this->messenger()->addMessage($this->t('Your information have been successfully saved.'));
-      $form_state->setRedirect('iss.purchase_history', ['user' => $id_user]);
     }
   }
 
